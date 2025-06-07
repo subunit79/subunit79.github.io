@@ -146,18 +146,21 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // 【修改】已移除所有 photo 物件中的 date 屬性
     const photoData = [
-        { lat: 25.175116, lng: 121.705706, image: "MyTravelPhotos/2K_DSC_2208.jpg", title: "基隆 外木山" },
-
+        // 北北基
+		{ lat: 25.175116, lng: 121.705706, image: "MyTravelPhotos/2K_DSC_2208.jpg", title: "基隆 外木山" },
+		{ lat: 25.04872765006386, lng: 121.78730965000841, image: "MyTravelPhotos/Liufen20160423-1446.jpg", title: "十分" },
+        { lat: 24.79055272996001, lng: 121.37513995000943, image: "MyTravelPhotos/Daligan20131019-1418.jpg", title: "小烏來" },
+        //桃竹苗
         { lat: 24.781903, lng: 120.915527, image: "MyTravelPhotos/新竹香山_2010-07-17-183755.jpg", title: "新竹 香山濕地" },
+		{ lat: 24.545337240032175, lng: 121.03013276992704, image: "MyTravelPhotos/Fengmei20130705-1106.jpg", title: "神仙谷" },
+        //台中		
         { lat: 24.255293, lng: 121.008138, image: "MyTravelPhotos/2K_DSC_5741.jpg", title: "台中 大雪山" },
         { lat: 24.265882, lng: 121.033844, image: "MyTravelPhotos/2K_DSC_2734.jpg", title: "台中 大雪山" },
         { lat: 24.265808, lng: 121.033855, image: "MyTravelPhotos/2K_DSC_2737.jpg", title: "台中 大雪山" },
         { lat: 24.265735, lng: 121.033828, image: "MyTravelPhotos/2K_DSC_2776.jpg", title: "台中 大雪山" },
         { lat: 24.265671, lng: 121.033823, image: "MyTravelPhotos/2K_DSC_2802.jpg", title: "台中 大雪山" },
         { lat: 24.265994, lng: 121.033936, image: "MyTravelPhotos/2K_DSC_2957.jpg", title: "台中 大雪山" },		
-
         { lat: 24.228794, lng: 120.834211, image: "MyTravelPhotos/2K_PXL_20210214.jpg", title: "台中 谷關" },
         { lat: 24.173076, lng: 120.735626, image: "MyTravelPhotos/台中中臺科大_2009-07-22-100050.jpg", title: "台中 中臺科大" },
         { lat: 24.166623, lng: 120.727599, image: "MyTravelPhotos/台中大坑情人橋_2016-07-03-045841.jpg", title: "台中 大坑情人橋" },
@@ -168,12 +171,12 @@ document.addEventListener('DOMContentLoaded', function () {
         { lat: 24.306251, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184932.jpg", title: "台中 高美濕地" },
         { lat: 24.312548, lng: 120.549856, image: "MyTravelPhotos/台中高美_2014-12-08-162247.jpg", title: "台中 高美濕地" },
         { lat: 24.312496, lng: 120.549859, image: "MyTravelPhotos/台中高美_2014-12-08-162247_2.jpg", title: "台中 高美濕地" },
-
+        //南投
         { lat: 24.133046, lng: 121.271102, image: "MyTravelPhotos/南投合歡山_2008-07-14-181228.jpg", title: "南投 合歡山" },
         { lat: 24.068947, lng: 121.167601, image: "MyTravelPhotos/南投清境_2008-07-15-054305.jpg", title: "南投 清境" },
         { lat: 23.867830, lng: 120.916026, image: "MyTravelPhotos/2K_DSC_2655.jpg", title: "南投 日月潭" },
         { lat: 23.867756, lng: 120.915988, image: "MyTravelPhotos/2K_DSC_2677.jpg", title: "南投 日月潭" },
-        { lat: 24.159754, lng: 121.283311, image: "MyTravelPhotos/2K_DSC_3818.jpg", title: "南投 日月潭" },
+        { lat: 23.842058279987807, lng: 120.92076301999786, image: "MyTravelPhotos/2K_DSC_3818.jpg", title: "南投 日月潭" },
         { lat: 24.160889, lng: 121.282668, image: "MyTravelPhotos/2K_DSC_3945.jpg", title: "南投 武嶺" },
         { lat: 24.159754, lng: 121.283311, image: "MyTravelPhotos/2K_DSC_3950.jpg", title: "南投 武嶺" },
         { lat: 23.857110, lng: 120.901966, image: "MyTravelPhotos/2K_DSC_4126.jpg", title: "南投 日月潭" },       
@@ -188,29 +191,35 @@ document.addEventListener('DOMContentLoaded', function () {
         { lat: 23.857346, lng: 120.945203, image: "MyTravelPhotos/魚池日月潭_2010-06-19-115806.jpg", title: "南投 日月潭" },
         { lat: 23.863439, lng: 120.909894, image: "MyTravelPhotos/魚池日月潭_2015-01-29-120947.jpg", title: "南投 日月潭" },
 		{ lat: 23.702536, lng: 120.705585, image: "MyTravelPhotos/竹山-_2008-04-17-101755.jpg", title: "南投 竹山" },
-        
+        { lat: 23.67766057000964, lng: 120.8473563200034, image: "MyTravelPhotos/Wusonglun20100114-1202.jpg", title: "烏松崙" },
+		{ lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1247.jpg", title: "烏松崙" },
+        { lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1316.jpg", title: "烏松崙" },
+        { lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1318.jpg", title: "烏松崙" },
+        //嘉義	
 		{ lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/竹崎頂石槕_2016-09-24-174117.jpg", title: "嘉義 頂石棹" },
         { lat: 23.847798, lng: 120.917040, image: "MyTravelPhotos/2K_DSC_3801.jpg", title: "嘉義 頂石棹" },
         { lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/2K_DSC_3816.jpg", title: "嘉義 頂石棹" },
         { lat: 23.479090, lng: 120.700113, image: "MyTravelPhotos/2K_DSC_5621.jpg", title: "嘉義 隙頂" },
         { lat: 23.479154, lng: 120.699995, image: "MyTravelPhotos/2K_DSC_5622.jpg", title: "嘉義 隙頂" },
         { lat: 23.478928, lng: 120.700317, image: "MyTravelPhotos/2K_DSC_5629.jpg", title: "嘉義 隙頂" },
-		
+        //台南		
 		{ lat: 23.259602, lng: 120.108118, image: "MyTravelPhotos/2K_DSC01164.jpg", title: "台南 七股" },
         { lat: 23.259434, lng: 120.108075, image: "MyTravelPhotos/2K_DSC04085.jpg", title: "台南 七股" },
         { lat: 23.259257, lng: 120.108032, image: "MyTravelPhotos/2K_DSC04099.jpg", title: "台南 七股" },
-        
+        //高雄       
 		{ lat: 22.876333, lng: 120.212230, image: "MyTravelPhotos/高雄興達港_2016-08-31-180232.jpg", title: "高雄 興達港" },
         { lat: 22.876857, lng: 120.212230, image: "MyTravelPhotos/高雄興達港_2016-08-31-182456.jpg", title: "高雄 興達港" },
-        
+        //屏東      
 		{ lat: 21.995709, lng: 120.706508, image: "MyTravelPhotos/2K_DSC_7760.jpg", title: "屏東 萬里桐" },
         { lat: 21.946458, lng: 120.743898, image: "MyTravelPhotos/恆春後壁湖_2016-07-05-052041.jpg", title: "屏東 後壁湖" },		
-		
+        //宜蘭		
+		{ lat: 24.751556840002078, lng: 121.75372838999787, image: "MyTravelPhotos/Ilan20090818-1537.jpg", title: "宜蘭" },
+		//花蓮		
         { lat: 24.031663, lng: 121.628007, image: "MyTravelPhotos/2K_DSC_2707.jpg", title: "花蓮 七星潭" },
         { lat: 24.031805, lng: 121.627825, image: "MyTravelPhotos/2K_DSC_2685.jpg", title: "花蓮 七星潭" },
         { lat: 24.031712, lng: 121.627911, image: "MyTravelPhotos/2K_DSC_2688.jpg", title: "花蓮 七星潭" },
         { lat: 23.219183, lng: 121.317558, image: "MyTravelPhotos/富里六十石山_2009-08-17-052801.jpg", title: "花蓮 六十石山" },
-
+        //台東
         { lat: 22.040138, lng: 121.520941, image: "MyTravelPhotos/2K_IMG_0611.jpg", title: "台東 蘭嶼" },
         { lat: 22.037201, lng: 121.558345, image: "MyTravelPhotos/蘭嶼氣象站_2016-07-05-113541.jpg", title: "台東 蘭嶼氣象站" },
         { lat: 22.039742, lng: 121.520419, image: "MyTravelPhotos/蘭嶼虎頭坡_2016-07-05-174245.jpg", title: "台東 蘭嶼虎頭坡" },

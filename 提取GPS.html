@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片 GPS 格式化輸出</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #444;
+        }
+        #photo-upload {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+        }
+        #output-area {
+            width: 100%;
+            height: 250px;
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 14px;
+            white-space: pre;
+            box-sizing: border-box;
+        }
+        #copy-button {
+            display: block;
+            width: 150px;
+            margin: 15px auto 0;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        #copy-button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>照片 GPS 格式化輸出</h1>
+        <p>請選擇照片。為了讓 `title` 欄位能正確產生，建議檔案名稱格式為 `地點名稱YYYYMMDD-其他.jpg`。</p>
+
+        <input type="file" id="photo-upload" accept="image/jpeg, image/tiff" multiple>
+        
+        <div id="status"></div>
+
+        <h2>輸出結果</h2>
+        <textarea id="output-area" readonly placeholder="這裡將會顯示處理結果..."></textarea>
+        <button id="copy-button">複製結果</button>
+    </div>
+
+    <!-- 引用 exif-js 函式庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
+    <script>
+        // 將度分秒 (DMS) 轉換為十進位制 (DD)
+        function dmsToDd(degrees, minutes, seconds, direction) {
+            let dd = degrees + minutes / 60 + seconds / 3600;
+            if (direction === "S" || direction === "W") {
+                dd = dd * -1;
+            }
+            return dd;
+        }
+
+        // 從檔案名稱中提取標題
+        function extractTitleFromFilename(filename) {
+            const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.')) || filename;
+            const match = nameWithoutExt.match(/(.*?)\d{8}/);
+            if (match && match[1]) {
+                return match[1].trim().replace(/[-_\s]$/, '');
+            }
+            return nameWithoutExt;
+        }
+
+        const photoUpload = document.getElementById('photo-upload');
+        const outputArea = document.getElementById('output-area');
+        const statusDiv = document.getElementById('status');
+        const copyButton = document.getElementById('copy-button');
+
+        photoUpload.addEventListener('change', function(event) {
+            const files = event.target.files;
+            outputArea.value = ''; // 清空之前的結果
+            statusDiv.textContent = `正在處理 ${files.length} 個檔案...`;
+            
+            if (files.length === 0) {
+                statusDiv.textContent = '請選擇檔案。';
+                return;
+            }
+
+            let processedCount = 0;
+            let foundGpsCount = 0;
+
+            for (const file of files) {
+                if (!file.type.match('image.*')) {
+                    processedCount++;
+                    continue;
+                }
+
+                // 注意：EXIF.getData 是非同步的，需要小心處理計數
+                EXIF.getData(file, function() {
+                    processedCount++;
+                    const latDMS = EXIF.getTag(this, "GPSLatitude");
+                    const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+                    const lonDMS = EXIF.getTag(this, "GPSLongitude");
+                    const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+
+                    if (latDMS && latRef && lonDMS && lonRef) {
+                        foundGpsCount++;
+                        const lat = dmsToDd(latDMS[0], latDMS[1], latDMS[2], latRef);
+                        const lng = dmsToDd(lonDMS[0], lonDMS[1], lonDMS[2], lonRef);
+                        const imagePath = "MyTravelPhotos/" + file.name;
+                        const title = extractTitleFromFilename(file.name);
+
+                        // **手動組合字串，以符合您的特殊格式**
+                        // 使用模板字符串（`）讓組合更清晰
+                        const outputString = `{ lat: ${lat}, lng: ${lng}, image: "${imagePath}", title: "${title}" },`;
+                        
+                        // 將新產生的行附加到 textarea，並加上換行符
+                        outputArea.value += outputString + '\n';
+                    }
+
+                    // 當所有檔案都處理完畢時更新狀態
+                    if (processedCount === files.length) {
+                         statusDiv.textContent = `處理完成！總共 ${files.length} 個檔案，找到 ${foundGpsCount} 個含有 GPS 的照片。`;
+                    }
+                });
+            }
+        });
+
+        // 複製按鈕的功能
+        copyButton.addEventListener('click', function() {
+            if (outputArea.value.trim() === '') {
+                alert('沒有內容可以複製！');
+                return;
+            }
+            // 使用 Clipboard API，這是現代且安全的方法
+            navigator.clipboard.writeText(outputArea.value).then(function() {
+                // 提供視覺回饋
+                const originalText = copyButton.textContent;
+                copyButton.textContent = '已複製！';
+                copyButton.style.backgroundColor = '#28a745'; // 綠色
+                setTimeout(function() {
+                    copyButton.textContent = originalText;
+                    copyButton.style.backgroundColor = '#007bff'; // 恢復原色
+                }, 2000);
+            }).catch(function(err) {
+                alert('複製失敗: ', err);
+            });
+        });
+    </script>
+
+</body>
+</html>
