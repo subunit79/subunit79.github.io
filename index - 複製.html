@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光影足跡 - 探索台灣之美</title>
+
+    <!-- LeafletJS (地圖核心) 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	-->
+    <link rel="stylesheet" href="css/leaflet.css"/>
+    <script src="js/leaflet.js"></script>
+
+
+    <!-- Leaflet MarkerCluster (解決標記重疊)
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+	 -->
+    <link rel="stylesheet" href="css/MarkerCluster.css" />
+    <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+    <script src="js/leaflet.markercluster.js"></script>
+
+
+    <!-- Google Fonts (優雅的字體) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-bg: #f4f6f9;
+            --secondary-bg: #f4f6f9; /*上層顏色*/
+            --panel-bg: #ffffff;
+            --font-color: #333333;
+            --font-color-muted: #6c757d;
+            --highlight-color: #e67e22; /* 橘色主題色 */
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--font-color);
+            overflow: hidden;
+        }
+
+        /* --- 主佈局 --- */
+        .header {
+            background-color: var(--secondary-bg); padding: 15px 30px;
+            height: 70px; box-sizing: border-box; display: flex;
+            align-items: center; border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow-color);
+            position: relative; z-index: 1001;
+            animation: fadeInDown 0.6s ease-out;
+        }
+        .header h1 { margin: 0; font-size: 1.6em; font-weight: 700; color: var(--highlight-color); }
+        .header p { margin: 4px 0 0 20px; font-weight: 400; font-size: 0.9em; color: var(--font-color-muted); }
+
+        .main-container { display: flex; height: calc(100vh - 70px); }
+        #map-container { flex-grow: 1; height: 100%; background-color: #eaf0f5; }
+        
+        /* --- 左側地點列表 --- */
+        #location-sidebar {
+            width: 380px; height: 100%; overflow-y: auto;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 10px 0; box-sizing: border-box;
+            animation: fadeInLeft 0.6s ease-out;
+        }
+        .location-group-header {
+            padding: 15px 20px; cursor: pointer; display: flex;
+            justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        .location-group-header:hover { background-color: #f8f9fa; }
+        .location-group-header h3 { margin: 0; font-size: 1.1em; font-weight: 500; }
+        .location-group-header .photo-count {
+            font-size: 0.8em; background-color: var(--highlight-color);
+            color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: 700;
+        }
+        .photo-list {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            background-color: #fafafa;
+        }
+        /* 【修改】簡化列表項目樣式 */
+        .photo-item {
+            padding: 10px 20px; cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .photo-item.active, .photo-item:hover { background-color: #e9ecef; }
+        .photo-item .thumbnail {
+            width: 100%; height: auto; object-fit: cover;
+            border-radius: 4px; display: block;
+            box-shadow: 0 1px 3px var(--shadow-color);
+        }
+
+        /* --- 地圖 Popup 樣式 --- */
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: var(--secondary-bg); color: var(--font-color);
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .leaflet-popup-content { margin: 15px !important; text-align: center; }
+        .leaflet-popup-content b { font-size: 1.2em; color: var(--highlight-color); display: block; margin-bottom: 10px; }
+        .leaflet-popup-content img {
+            max-width: 280px; height: auto; border-radius: 5px; cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .leaflet-popup-content img:hover { transform: scale(1.03); }
+
+        /* 【新增】覆寫 Marker Cluster 的顏色為橘色 */
+        .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background-color: rgba(241, 128, 23, 0.6); }
+        .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background-color: rgba(230, 126, 34, 0.9); color: #fff; }
+
+        /* --- Lightbox & 其他 --- */
+        .lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85);
+            display: flex; justify-content: center; align-items: center; z-index: 2000;
+            opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s;
+        }
+        .lightbox.show { opacity: 1; visibility: visible; }
+        .lightbox img { max-width: 90vw; max-height: 85vh; box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 5px; }
+        .lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5em; color: #fff; cursor: pointer; font-weight: 300; }
+        .lightbox .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); font-size: 3em; color: rgba(255, 255, 255, 0.7); cursor: pointer; user-select: none; padding: 10px; }
+        .lightbox .prev-btn { left: 20px; }
+        .lightbox .next-btn { right: 20px; }
+        .lightbox .nav-btn:hover { color: #fff; }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; height: calc(100vh - 60px); }
+            .header { height: 60px; padding: 10px 15px; } .header h1 { font-size: 1.4em; } .header p { display: none; }
+            #location-sidebar { width: 100%; height: 45%; border-right: none; border-bottom: 2px solid var(--border-color); }
+            #map-container { height: 55%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header"><h1>光影足跡</h1><p> Photographer / Cheng-nan Wu </p></header>
+    <main class="main-container">
+        <aside id="location-sidebar"></aside>
+        <div id="map-container"></div>
+    </main>
+    <div id="lightbox" class="lightbox">
+        <span class="close-btn">×</span><span class="nav-btn prev-btn">‹</span>
+        <img src="" alt="Enlarged view"><span class="nav-btn next-btn">›</span>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const photoData = [
+        // 北北基
+		{ lat: 25.175116, lng: 121.705706, image: "MyTravelPhotos/2K_DSC_2208.jpg", title: "基隆 外木山" },
+		{ lat: 25.04872765006386, lng: 121.78730965000841, image: "MyTravelPhotos/Liufen20160423-1446.jpg", title: "十分" },
+        { lat: 24.79055272996001, lng: 121.37513995000943, image: "MyTravelPhotos/Daligan20131019-1418.jpg", title: "小烏來" },
+		{ lat: 25.17292777777778, lng: 121.43488888888889, image: "MyTravelPhotos/Hongmaocheng20230705-1801.jpg", title: "淡水" },
+		{ lat: 25.171555555555557, lng: 121.43697222222222, image: "MyTravelPhotos/Hongmaocheng20230705-1844.jpg", title: "淡水" },
+		{ lat: 25.171897222222224, lng: 121.4365138888889, image: "MyTravelPhotos/Hongmaocheng20230705-1830.jpg", title: "淡水" },
+		{ lat: 25.17243888888889, lng: 121.43564722222223, image: "MyTravelPhotos/Hongmaocheng20230705-1751.jpg", title: "淡水" },
+
+        //桃竹苗
+        { lat: 24.781903, lng: 120.915527, image: "MyTravelPhotos/新竹香山_2010-07-17-183755.jpg", title: "香山濕地" },
+		{ lat: 24.783403270000658, lng: 120.914433, image: "MyTravelPhotos/_DSC6107.JPG", title: "賞蟹步道" },
+		{ lat: 24.783403270000658, lng: 120.914433, image: "MyTravelPhotos/_DSC6116.ARW.jpg", title: "賞蟹步道" },
+		{ lat: 24.783403270000658, lng: 120.914433, image: "MyTravelPhotos/_DSC6112.JPG", title: "賞蟹步道" },
+
+		{ lat: 24.545337240032175, lng: 121.03013276992704, image: "MyTravelPhotos/Fengmei20130705-1106.jpg", title: "神仙谷" },
+		{ lat: 24.64828888888889, lng: 120.770775, image: "MyTravelPhotos/Keziku20231109-1344.jpg", title: "外埔漁港" },
+		{ lat: 24.65073333333333, lng: 120.77034722222223, image: "MyTravelPhotos/Keziku20231109-1353.jpg", title: "外埔漁港" },
+		{ lat: 24.651055555555555, lng: 120.77021111111111, image: "MyTravelPhotos/Keziku20231109-1356.jpg", title: "外埔漁港" },
+		
+		
+        //台中		
+        { lat: 24.255293, lng: 121.008138, image: "MyTravelPhotos/2K_DSC_5741.jpg", title: "大雪山" },
+        { lat: 24.265882, lng: 121.033844, image: "MyTravelPhotos/2K_DSC_2734.jpg", title: "大雪山" },
+        { lat: 24.265808, lng: 121.033855, image: "MyTravelPhotos/2K_DSC_2737.jpg", title: "大雪山" },
+        { lat: 24.265735, lng: 121.033828, image: "MyTravelPhotos/2K_DSC_2776.jpg", title: "大雪山" },
+        { lat: 24.265671, lng: 121.033823, image: "MyTravelPhotos/2K_DSC_2802.jpg", title: "大雪山" },
+        { lat: 24.265994, lng: 121.033936, image: "MyTravelPhotos/2K_DSC_2957.jpg", title: "大雪山" },	
+		{ lat: 24.282410949868073, lng: 121.0272038000289, image: "MyTravelPhotos/DSC_5630.jpg", title: "大雪山" },
+		{ lat: 24.228794, lng: 120.834211, image: "MyTravelPhotos/2K_PXL_20210214.jpg", title: "台中 谷關" },
+        { lat: 24.173076, lng: 120.735626, image: "MyTravelPhotos/台中中臺科大_2009-07-22-100050.jpg", title: "天文" },
+        { lat: 24.166623, lng: 120.727599, image: "MyTravelPhotos/台中大坑情人橋_2016-07-03-045841.jpg", title: "台中 大坑情人橋" },
+        { lat: 24.379651, lng: 120.584081, image: "MyTravelPhotos/台中大安_2014-12-08-153753.jpg", title: "台中 大安" },
+        { lat: 24.195997, lng: 120.712831, image: "MyTravelPhotos/台中旱溪_2020-07-11-035859.jpg", title: "天文" },
+        { lat: 24.306055, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184340.jpg", title: "台中 高美濕地" },
+        { lat: 24.305958, lng: 120.546562, image: "MyTravelPhotos/台中高美_2009-07-22-184924.jpg", title: "台中 高美濕地" },
+        { lat: 24.306251, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184932.jpg", title: "台中 高美濕地" },
+        { lat: 24.312548, lng: 120.549856, image: "MyTravelPhotos/台中高美_2014-12-08-162247.jpg", title: "台中 高美濕地" },
+        { lat: 24.312496, lng: 120.549859, image: "MyTravelPhotos/台中高美_2014-12-08-162247_2.jpg", title: "台中 高美濕地" },
+		{ lat: 24.27887067007382, lng: 120.75959444004575, image: "MyTravelPhotos/Pitou20110605-1028.jpg", title: "舊山線" },
+
+        //南投
+        { lat: 24.133046, lng: 121.271102, image: "MyTravelPhotos/南投合歡山_2008-07-14-181228.jpg", title: "南投 合歡山" },
+        { lat: 24.068947, lng: 121.167601, image: "MyTravelPhotos/南投清境_2008-07-15-054305.jpg", title: "南投 清境" },
+        { lat: 23.867830, lng: 120.916026, image: "MyTravelPhotos/2K_DSC_2655.jpg", title: "南投 日月潭" },
+        { lat: 23.867756, lng: 120.915988, image: "MyTravelPhotos/2K_DSC_2677.jpg", title: "南投 日月潭" },
+        { lat: 23.842058279987807, lng: 120.92076301999786, image: "MyTravelPhotos/2K_DSC_3818.jpg", title: "南投 日月潭" },
+        { lat: 24.160889, lng: 121.282668, image: "MyTravelPhotos/2K_DSC_3945.jpg", title: "南投 武嶺" },
+        { lat: 24.159754, lng: 121.283311, image: "MyTravelPhotos/2K_DSC_3950.jpg", title: "南投 武嶺" },
+        { lat: 23.857110, lng: 120.901966, image: "MyTravelPhotos/2K_DSC_4126.jpg", title: "南投 日月潭" },       
+        { lat: 24.133125, lng: 121.271016, image: "MyTravelPhotos/2K_DSC_3126.jpg", title: "南投 合歡山" },
+        { lat: 23.900414, lng: 120.879328, image: "MyTravelPhotos/2K_DSC_8410.jpg", title: "南投 五城" },
+        { lat: 23.900806, lng: 120.879800, image: "MyTravelPhotos/2K_DSC_8411.jpg", title: "南投 五城" },
+        { lat: 23.900198, lng: 120.878984, image: "MyTravelPhotos/2K_DSC_8414.jpg", title: "南投 五城" },
+        { lat: 23.901061, lng: 120.880208, image: "MyTravelPhotos/2K_DSC_8485.jpg", title: "南投 五城" },
+        { lat: 23.899963, lng: 120.878791, image: "MyTravelPhotos/2K_DSC_8548.jpg", title: "南投 五城" },
+        { lat: 23.899806, lng: 120.878791, image: "MyTravelPhotos/2K_DSC_8556.jpg", title: "南投 五城" },
+        { lat: 23.857405, lng: 120.945482, image: "MyTravelPhotos/魚池日月潭_2010-06-19-115738.jpg", title: "南投 日月潭" },
+        { lat: 23.857346, lng: 120.945203, image: "MyTravelPhotos/魚池日月潭_2010-06-19-115806.jpg", title: "南投 日月潭" },
+        { lat: 23.863439, lng: 120.909894, image: "MyTravelPhotos/魚池日月潭_2015-01-29-120947.jpg", title: "南投 日月潭" },
+		{ lat: 23.702536, lng: 120.705585, image: "MyTravelPhotos/竹山-_2008-04-17-101755.jpg", title: "南投 竹山" },
+        { lat: 23.67766057000964, lng: 120.8473563200034, image: "MyTravelPhotos/Wusonglun20100114-1202.jpg", title: "烏松崙" },
+		{ lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1247.jpg", title: "烏松崙" },
+        { lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1316.jpg", title: "烏松崙" },
+        { lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1318.jpg", title: "烏松崙" },
+        //嘉義	
+		{ lat: 23.5183485, lng: 120.13644217999796, image: "MyTravelPhotos/日環食L.jpg", title: "天文" },
+		{ lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/竹崎頂石槕_2016-09-24-174117.jpg", title: "嘉義 頂石棹" },
+        { lat: 23.847798, lng: 120.917040, image: "MyTravelPhotos/2K_DSC_3801.jpg", title: "嘉義 頂石棹" },
+        { lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/2K_DSC_3816.jpg", title: "嘉義 頂石棹" },
+        { lat: 23.479090, lng: 120.700113, image: "MyTravelPhotos/2K_DSC_5621.jpg", title: "嘉義 隙頂" },
+        { lat: 23.479154, lng: 120.699995, image: "MyTravelPhotos/2K_DSC_5622.jpg", title: "嘉義 隙頂" },
+        { lat: 23.478928, lng: 120.700317, image: "MyTravelPhotos/2K_DSC_5629.jpg", title: "嘉義 隙頂" },
+        //台南		
+		{ lat: 23.259602, lng: 120.108118, image: "MyTravelPhotos/2K_DSC01164.jpg", title: "台南 七股" },
+        { lat: 23.259434, lng: 120.108075, image: "MyTravelPhotos/2K_DSC04085.jpg", title: "台南 七股" },
+        { lat: 23.259257, lng: 120.108032, image: "MyTravelPhotos/2K_DSC04099.jpg", title: "台南 七股" },
+        //高雄       
+		{ lat: 22.876333, lng: 120.212230, image: "MyTravelPhotos/高雄興達港_2016-08-31-180232.jpg", title: "高雄 興達港" },
+        { lat: 22.876857, lng: 120.212230, image: "MyTravelPhotos/高雄興達港_2016-08-31-182456.jpg", title: "高雄 興達港" },
+        //屏東      
+		{ lat: 21.995709, lng: 120.706508, image: "MyTravelPhotos/2K_DSC_7760.jpg", title: "屏東 萬里桐" },
+        { lat: 21.946458, lng: 120.743898, image: "MyTravelPhotos/恆春後壁湖_2016-07-05-052041.jpg", title: "屏東 後壁湖" },		
+        //宜蘭		
+		{ lat: 24.751556840002078, lng: 121.75372838999787, image: "MyTravelPhotos/Ilan20090818-1537.jpg", title: "宜蘭" },
+		//花蓮		
+        { lat: 24.031663, lng: 121.628007, image: "MyTravelPhotos/2K_DSC_2707.jpg", title: "花蓮 七星潭" },
+        { lat: 24.031805, lng: 121.627825, image: "MyTravelPhotos/2K_DSC_2685.jpg", title: "花蓮 七星潭" },
+        { lat: 24.031712, lng: 121.627911, image: "MyTravelPhotos/2K_DSC_2688.jpg", title: "花蓮 七星潭" },
+        { lat: 23.219183, lng: 121.317558, image: "MyTravelPhotos/富里六十石山_2009-08-17-052801.jpg", title: "花蓮 六十石山" },
+        //台東
+        { lat: 22.752827777777778, lng: 121.146775, image: "MyTravelPhotos/Taitung20230819-1948.jpg", title: "台東市" },
+		{ lat: 22.788369444444445, lng: 121.18350277777778, image: "MyTravelPhotos/Fugang20230819-0529.JPG", title: "富岡" },
+		{ lat: 22.788355555555558, lng: 121.18349444444445, image: "MyTravelPhotos/Fugang20230819-0532.JPG", title: "富岡" },
+		{ lat: 22.040138, lng: 121.520941, image: "MyTravelPhotos/2K_IMG_0611.jpg", title: "台東 蘭嶼" },
+        { lat: 22.037201, lng: 121.558345, image: "MyTravelPhotos/蘭嶼氣象站_2016-07-05-113541.jpg", title: "台東 蘭嶼氣象站" },
+        { lat: 22.039742, lng: 121.520419, image: "MyTravelPhotos/蘭嶼虎頭坡_2016-07-05-174245.jpg", title: "台東 蘭嶼虎頭坡" },
+        { lat: 22.040020, lng: 121.522135, image: "MyTravelPhotos/蘭嶼虎頭坡_2016-07-05-181718.jpg", title: "台東 蘭嶼虎頭坡" }
+
+
+
+    ];
+
+    // --- 1. 地圖初始化 ---
+    const map = L.map('map-container', { center: [23.9, 121.1], zoom: 8, zoomControl: false });
+
+    // 【修改】使用台灣「國土測繪中心」的通用電子地圖圖磚
+    L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
+        attribution: '圖資來源：© <a href="https://maps.nlsc.gov.tw/" target="_blank">國土測繪中心</a>',
+        maxZoom: 20
+    }).addTo(map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // 【新增】定義一個醒目的橘色圖標
+    const orangeIcon = new L.Icon({
+       <!-- 
+	    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+		-->
+		iconUrl: 'img/marker-icon-2x-blue.png',
+        shadowUrl: 'img/marker-shadow.png',
+		
+        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    // --- 2. 資料處理：按地點分組 ---
+    const groupedData = photoData.reduce((acc, photo, index) => {
+        const location = photo.title; if (!acc[location]) { acc[location] = []; }
+        photo.id = index; acc[location].push(photo); return acc;
+    }, {});
+
+    // --- 3. 動態生成 UI ---
+    const sidebar = document.getElementById('location-sidebar');
+    const markers = L.markerClusterGroup();
+    const allMarkers = [];
+
+    for (const location in groupedData) {
+        const photos = groupedData[location];
+        const groupDiv = document.createElement('div'); groupDiv.className = 'location-group';
+        const headerDiv = document.createElement('div'); headerDiv.className = 'location-group-header';
+        headerDiv.innerHTML = `<h3>${location}</h3><span class="photo-count">${photos.length}</span>`;
+        const photoListDiv = document.createElement('div'); photoListDiv.className = 'photo-list';
+
+        photos.forEach(photo => {
+            const item = document.createElement('div');
+            item.className = 'photo-item';
+            item.dataset.photoId = photo.id;
+            // 【修改】移除日期顯示，只保留縮圖
+            item.innerHTML = `<img src="${photo.image}" class="thumbnail" alt="${photo.title}" loading="lazy">`;
+            photoListDiv.appendChild(item);
+
+            // 【修改】創建 marker 時使用橘色圖標
+            const marker = L.marker([photo.lat, photo.lng], { icon: orangeIcon });
+            marker.bindPopup(`<b>${photo.title}</b><img src="${photo.image}" alt="${photo.title}" data-photo-id="${photo.id}">`);
+            marker.photoId = photo.id;
+            markers.addLayer(marker);
+            allMarkers[photo.id] = marker;
+        });
+        groupDiv.appendChild(headerDiv); groupDiv.appendChild(photoListDiv);
+        sidebar.appendChild(groupDiv);
+    }
+    map.addLayer(markers);
+    if (photoData.length > 0) { map.fitBounds(markers.getBounds().pad(0.1)); }
+
+    // --- 4. 互動事件綁定 ---
+    sidebar.addEventListener('click', e => {
+        const header = e.target.closest('.location-group-header');
+        if (header) {
+            const photoList = header.nextElementSibling;
+            const isExpanded = photoList.style.maxHeight && photoList.style.maxHeight !== '0px';
+            document.querySelectorAll('.photo-list').forEach(list => { if(list !== photoList) list.style.maxHeight = null; });
+            photoList.style.maxHeight = isExpanded ? null : photoList.scrollHeight + "px";
+        }
+        const item = e.target.closest('.photo-item');
+        if (item) {
+            const photoId = parseInt(item.dataset.photoId);
+            const photo = photoData[photoId];
+            const marker = allMarkers[photoId];
+            document.querySelectorAll('.photo-item').forEach(el => el.classList.remove('active'));
+            item.classList.add('active');
+            map.flyTo([photo.lat, photo.lng], 16);
+            markers.zoomToShowLayer(marker, () => marker.openPopup());
+        }
+    });
+
+    markers.on('click', (e) => {
+        const photoId = e.layer.photoId;
+        const targetItem = document.querySelector(`.photo-item[data-photo-id='${photoId}']`);
+        if (targetItem) {
+            const photoList = targetItem.closest('.photo-list');
+            if (photoList && (!photoList.style.maxHeight || photoList.style.maxHeight === '0px')) {
+                photoList.style.maxHeight = photoList.scrollHeight + "px";
+            }
+            setTimeout(() => {
+                targetItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.querySelectorAll('.photo-item').forEach(el => el.classList.remove('active'));
+                targetItem.classList.add('active');
+            }, 300);
+        }
+    });
+
+    // --- 5. Lightbox 燈箱功能 ---
+    const lightbox = document.getElementById('lightbox'), lightboxImg = lightbox.querySelector('img'),
+          closeBtn = lightbox.querySelector('.close-btn'), prevBtn = lightbox.querySelector('.prev-btn'),
+          nextBtn = lightbox.querySelector('.next-btn');
+    let currentPhotoId;
+    function showLightbox(id) { currentPhotoId = id; lightboxImg.src = photoData[id].image; lightbox.classList.add('show'); }
+    function closeLightbox() { lightbox.classList.remove('show'); }
+    function showAdjacent(dir) { let nextId = currentPhotoId + dir; if (nextId >= photoData.length) nextId = 0; if (nextId < 0) nextId = photoData.length - 1; showLightbox(nextId); }
+    map.on('popupopen', e => { const img = e.popup._container.querySelector('img'); if (img) img.onclick = () => showLightbox(parseInt(img.dataset.photoId)); });
+    closeBtn.addEventListener('click', closeLightbox);
+    prevBtn.addEventListener('click', () => showAdjacent(-1));
+    nextBtn.addEventListener('click', () => showAdjacent(1));
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', e => { if (lightbox.classList.contains('show')) { if (e.key === 'Escape') closeLightbox(); if (e.key === 'ArrowLeft') showAdjacent(-1); if (e.key === 'ArrowRight') showAdjacent(1); } });
+});
+</script>
+</body>
+</html>
