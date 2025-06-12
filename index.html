@@ -5,14 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>光影足跡 - 探索台灣之美</title>
 
-    <!-- LeafletJS (地圖核心) -->
+    <!-- LeafletJS (地圖核心) 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	-->
+    <link rel="stylesheet" href="css/leaflet.css"/>
+    <script src="js/leaflet.js"></script>
 
-    <!-- Leaflet MarkerCluster (解決標記重疊) -->
+
+    <!-- Leaflet MarkerCluster (解決標記重疊)
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+	 -->
+    <link rel="stylesheet" href="css/MarkerCluster.css" />
+    <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+    <script src="js/leaflet.markercluster.js"></script>
+
 
     <!-- Google Fonts (優雅的字體) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +31,7 @@
     <style>
         :root {
             --primary-bg: #f4f6f9;
-            --secondary-bg: #ffffff;
+            --secondary-bg: #f4f6f9; /*上層顏色*/
             --panel-bg: #ffffff;
             --font-color: #333333;
             --font-color-muted: #6c757d;
@@ -134,7 +143,7 @@
     </style>
 </head>
 <body>
-    <header class="header"><h1>光影足跡</h1><p>我的攝影地圖</p></header>
+    <header class="header"><h1>光影足跡</h1><p> Photographer / Cheng-nan Wu </p></header>
     <main class="main-container">
         <aside id="location-sidebar"></aside>
         <div id="map-container"></div>
@@ -151,26 +160,43 @@ document.addEventListener('DOMContentLoaded', function () {
 		{ lat: 25.175116, lng: 121.705706, image: "MyTravelPhotos/2K_DSC_2208.jpg", title: "基隆 外木山" },
 		{ lat: 25.04872765006386, lng: 121.78730965000841, image: "MyTravelPhotos/Liufen20160423-1446.jpg", title: "十分" },
         { lat: 24.79055272996001, lng: 121.37513995000943, image: "MyTravelPhotos/Daligan20131019-1418.jpg", title: "小烏來" },
+		{ lat: 25.17292777777778, lng: 121.43488888888889, image: "MyTravelPhotos/Hongmaocheng20230705-1801.jpg", title: "淡水" },
+		{ lat: 25.171555555555557, lng: 121.43697222222222, image: "MyTravelPhotos/Hongmaocheng20230705-1844.jpg", title: "淡水" },
+		{ lat: 25.171897222222224, lng: 121.4365138888889, image: "MyTravelPhotos/Hongmaocheng20230705-1830.jpg", title: "淡水" },
+		{ lat: 25.17243888888889, lng: 121.43564722222223, image: "MyTravelPhotos/Hongmaocheng20230705-1751.jpg", title: "淡水" },
+
         //桃竹苗
-        { lat: 24.781903, lng: 120.915527, image: "MyTravelPhotos/新竹香山_2010-07-17-183755.jpg", title: "新竹 香山濕地" },
+        { lat: 24.781903, lng: 120.915527, image: "MyTravelPhotos/新竹香山_2010-07-17-183755.jpg", title: "香山濕地" },
+		{ lat: 24.783403270000658, lng: 120.914433, image: "MyTravelPhotos/_DSC6107.JPG", title: "賞蟹步道" },
+		{ lat: 24.783403270000658, lng: 120.914433, image: "MyTravelPhotos/_DSC6116.ARW.jpg", title: "賞蟹步道" },
+		{ lat: 24.783403270000658, lng: 120.914433, image: "MyTravelPhotos/_DSC6112.JPG", title: "賞蟹步道" },
+
 		{ lat: 24.545337240032175, lng: 121.03013276992704, image: "MyTravelPhotos/Fengmei20130705-1106.jpg", title: "神仙谷" },
+		{ lat: 24.64828888888889, lng: 120.770775, image: "MyTravelPhotos/Keziku20231109-1344.jpg", title: "外埔漁港" },
+		{ lat: 24.65073333333333, lng: 120.77034722222223, image: "MyTravelPhotos/Keziku20231109-1353.jpg", title: "外埔漁港" },
+		{ lat: 24.651055555555555, lng: 120.77021111111111, image: "MyTravelPhotos/Keziku20231109-1356.jpg", title: "外埔漁港" },
+		
+		
         //台中		
-        { lat: 24.255293, lng: 121.008138, image: "MyTravelPhotos/2K_DSC_5741.jpg", title: "台中 大雪山" },
-        { lat: 24.265882, lng: 121.033844, image: "MyTravelPhotos/2K_DSC_2734.jpg", title: "台中 大雪山" },
-        { lat: 24.265808, lng: 121.033855, image: "MyTravelPhotos/2K_DSC_2737.jpg", title: "台中 大雪山" },
-        { lat: 24.265735, lng: 121.033828, image: "MyTravelPhotos/2K_DSC_2776.jpg", title: "台中 大雪山" },
-        { lat: 24.265671, lng: 121.033823, image: "MyTravelPhotos/2K_DSC_2802.jpg", title: "台中 大雪山" },
-        { lat: 24.265994, lng: 121.033936, image: "MyTravelPhotos/2K_DSC_2957.jpg", title: "台中 大雪山" },		
-        { lat: 24.228794, lng: 120.834211, image: "MyTravelPhotos/2K_PXL_20210214.jpg", title: "台中 谷關" },
-        { lat: 24.173076, lng: 120.735626, image: "MyTravelPhotos/台中中臺科大_2009-07-22-100050.jpg", title: "台中 中臺科大" },
+        { lat: 24.255293, lng: 121.008138, image: "MyTravelPhotos/2K_DSC_5741.jpg", title: "大雪山" },
+        { lat: 24.265882, lng: 121.033844, image: "MyTravelPhotos/2K_DSC_2734.jpg", title: "大雪山" },
+        { lat: 24.265808, lng: 121.033855, image: "MyTravelPhotos/2K_DSC_2737.jpg", title: "大雪山" },
+        { lat: 24.265735, lng: 121.033828, image: "MyTravelPhotos/2K_DSC_2776.jpg", title: "大雪山" },
+        { lat: 24.265671, lng: 121.033823, image: "MyTravelPhotos/2K_DSC_2802.jpg", title: "大雪山" },
+        { lat: 24.265994, lng: 121.033936, image: "MyTravelPhotos/2K_DSC_2957.jpg", title: "大雪山" },	
+		{ lat: 24.282410949868073, lng: 121.0272038000289, image: "MyTravelPhotos/DSC_5630.jpg", title: "大雪山" },
+		{ lat: 24.228794, lng: 120.834211, image: "MyTravelPhotos/2K_PXL_20210214.jpg", title: "台中 谷關" },
+        { lat: 24.173076, lng: 120.735626, image: "MyTravelPhotos/台中中臺科大_2009-07-22-100050.jpg", title: "天文" },
         { lat: 24.166623, lng: 120.727599, image: "MyTravelPhotos/台中大坑情人橋_2016-07-03-045841.jpg", title: "台中 大坑情人橋" },
         { lat: 24.379651, lng: 120.584081, image: "MyTravelPhotos/台中大安_2014-12-08-153753.jpg", title: "台中 大安" },
-        { lat: 24.195997, lng: 120.712831, image: "MyTravelPhotos/台中旱溪_2020-07-11-035859.jpg", title: "台中 旱溪" },
+        { lat: 24.195997, lng: 120.712831, image: "MyTravelPhotos/台中旱溪_2020-07-11-035859.jpg", title: "天文" },
         { lat: 24.306055, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184340.jpg", title: "台中 高美濕地" },
         { lat: 24.305958, lng: 120.546562, image: "MyTravelPhotos/台中高美_2009-07-22-184924.jpg", title: "台中 高美濕地" },
         { lat: 24.306251, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184932.jpg", title: "台中 高美濕地" },
         { lat: 24.312548, lng: 120.549856, image: "MyTravelPhotos/台中高美_2014-12-08-162247.jpg", title: "台中 高美濕地" },
         { lat: 24.312496, lng: 120.549859, image: "MyTravelPhotos/台中高美_2014-12-08-162247_2.jpg", title: "台中 高美濕地" },
+		{ lat: 24.27887067007382, lng: 120.75959444004575, image: "MyTravelPhotos/Pitou20110605-1028.jpg", title: "舊山線" },
+
         //南投
         { lat: 24.133046, lng: 121.271102, image: "MyTravelPhotos/南投合歡山_2008-07-14-181228.jpg", title: "南投 合歡山" },
         { lat: 24.068947, lng: 121.167601, image: "MyTravelPhotos/南投清境_2008-07-15-054305.jpg", title: "南投 清境" },
@@ -196,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1316.jpg", title: "烏松崙" },
         { lat: 23.67764091999381, lng: 120.84722756997921, image: "MyTravelPhotos/Wusonglun20100114-1318.jpg", title: "烏松崙" },
         //嘉義	
+		{ lat: 23.5183485, lng: 120.13644217999796, image: "MyTravelPhotos/日環食L.jpg", title: "天文" },
 		{ lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/竹崎頂石槕_2016-09-24-174117.jpg", title: "嘉義 頂石棹" },
         { lat: 23.847798, lng: 120.917040, image: "MyTravelPhotos/2K_DSC_3801.jpg", title: "嘉義 頂石棹" },
         { lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/2K_DSC_3816.jpg", title: "嘉義 頂石棹" },
@@ -220,10 +247,15 @@ document.addEventListener('DOMContentLoaded', function () {
         { lat: 24.031712, lng: 121.627911, image: "MyTravelPhotos/2K_DSC_2688.jpg", title: "花蓮 七星潭" },
         { lat: 23.219183, lng: 121.317558, image: "MyTravelPhotos/富里六十石山_2009-08-17-052801.jpg", title: "花蓮 六十石山" },
         //台東
-        { lat: 22.040138, lng: 121.520941, image: "MyTravelPhotos/2K_IMG_0611.jpg", title: "台東 蘭嶼" },
+        { lat: 22.752827777777778, lng: 121.146775, image: "MyTravelPhotos/Taitung20230819-1948.jpg", title: "台東市" },
+		{ lat: 22.788369444444445, lng: 121.18350277777778, image: "MyTravelPhotos/Fugang20230819-0529.JPG", title: "富岡" },
+		{ lat: 22.788355555555558, lng: 121.18349444444445, image: "MyTravelPhotos/Fugang20230819-0532.JPG", title: "富岡" },
+		{ lat: 22.040138, lng: 121.520941, image: "MyTravelPhotos/2K_IMG_0611.jpg", title: "台東 蘭嶼" },
         { lat: 22.037201, lng: 121.558345, image: "MyTravelPhotos/蘭嶼氣象站_2016-07-05-113541.jpg", title: "台東 蘭嶼氣象站" },
         { lat: 22.039742, lng: 121.520419, image: "MyTravelPhotos/蘭嶼虎頭坡_2016-07-05-174245.jpg", title: "台東 蘭嶼虎頭坡" },
         { lat: 22.040020, lng: 121.522135, image: "MyTravelPhotos/蘭嶼虎頭坡_2016-07-05-181718.jpg", title: "台東 蘭嶼虎頭坡" }
+
+
 
     ];
 
@@ -240,8 +272,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 【新增】定義一個醒目的橘色圖標
     const orangeIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+       <!-- 
+	    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+		-->
+		iconUrl: 'img/marker-icon-2x-blue.png',
+        shadowUrl: 'img/marker-shadow.png',
+		
         iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
