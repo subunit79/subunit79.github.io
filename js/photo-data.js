@@ -31,11 +31,11 @@ const photoData = [
     { lat: 24.166623, lng: 120.727599, image: "MyTravelPhotos/台中大坑情人橋_2016-07-03-045841.jpg", title: "大坑情人橋" },
     { lat: 24.379651, lng: 120.584081, image: "MyTravelPhotos/台中大安_2014-12-08-153753.jpg", title: "大安" },
     { lat: 24.195997, lng: 120.712831, image: "MyTravelPhotos/台中旱溪_2020-07-11-035859.jpg", title: "天文" },
-    { lat: 24.306055, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184340.jpg", title: "高美濕地" },
-    { lat: 24.305958, lng: 120.546562, image: "MyTravelPhotos/台中高美_2009-07-22-184924.jpg", title: "高美濕地" },
-    { lat: 24.306251, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184932.jpg", title: "高美濕地" },
-    { lat: 24.312548, lng: 120.549856, image: "MyTravelPhotos/台中高美_2014-12-08-162247.jpg", title: "高美濕地" },
-    { lat: 24.312496, lng: 120.549859, image: "MyTravelPhotos/台中高美_2014-12-08-162247_2.jpg", title: "高美濕地" },
+    { lat: 24.306055, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184340.jpg", title: "高美溼地" },
+    { lat: 24.305958, lng: 120.546562, image: "MyTravelPhotos/台中高美_2009-07-22-184924.jpg", title: "高美溼地" },
+    { lat: 24.306251, lng: 120.546498, image: "MyTravelPhotos/台中高美_2009-07-22-184932.jpg", title: "高美溼地" },
+    { lat: 24.312548, lng: 120.549856, image: "MyTravelPhotos/台中高美_2014-12-08-162247.jpg", title: "高美溼地" },
+    { lat: 24.312496, lng: 120.549859, image: "MyTravelPhotos/台中高美_2014-12-08-162247_2.jpg", title: "高美溼地" },
     { lat: 24.27887067007382, lng: 120.75959444004575, image: "MyTravelPhotos/Pitou20110605-1028.jpg", title: "舊山線" },
 
     //南投
@@ -166,7 +166,14 @@ const photoData = [
 { lat: 23.48211157993436, lng: 120.35426974000137, image: "MyTravelPhotos/魚寮落羽松202501301459.jpg", title: "魚寮落羽松" },
 { lat: 24.137903059990325, lng: 120.69188476003598, image: "MyTravelPhotos/湧泉公園202502021548.jpg", title: "湧泉公園" },
 { lat: 24.138568829999514, lng: 120.69159507997715, image: "MyTravelPhotos/湧泉公園189912300000.JPG", title: "湧泉公園" },
-	
+{ lat: 24.31276111111111, lng: 120.54778888888889, image: "MyTravelPhotos/高美溼地202308171555.JPG", title: "高美溼地" },
+{ lat: 22.78975555555556, lng: 121.18500555555556, image: "MyTravelPhotos/富岡202308190521.JPG", title: "富岡" },
+{ lat: 22.269980555555556, lng: 120.88869444444445, image: "MyTravelPhotos/南田202308181355.JPG", title: "南田" },
+{ lat: 22.788405555555556, lng: 121.18330277777778, image: "MyTravelPhotos/富岡202308190552.jpg", title: "富岡" },
+{ lat: 24.172947222222223, lng: 120.73644444444444, image: "MyTravelPhotos/中臺科大202307271247.JPG", title: "花卉" },
+{ lat: 22.794132972222222, lng: 121.19528997222223, image: "MyTravelPhotos/花卉202007252231.jpg", title: "花卉" },
+{ lat: 22.79409, lng: 121.19529197222222, image: "MyTravelPhotos/花卉202007252235.jpg", title: "花卉" },
+{ lat: 22.794118, lng: 121.195305, image: "MyTravelPhotos/花卉202007252236.jpg", title: "花卉" },
 	
     { lat: 25.16567222222222, lng: 121.44715833333333, image: "MyTravelPhotos/IMG_9512.JPG", title: "淡水" }
 ];
