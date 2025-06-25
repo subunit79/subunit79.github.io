@@ -20,15 +20,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
+        /* 【新增】定義一套全新的深色藝廊風格調色盤 */
         :root {
-            --primary-bg: #f4f6f9;
-            --secondary-bg: #f4f6f9; /*上層顏色*/
-            --panel-bg: #ffffff;
-            --font-color: #333333;
-            --font-color-muted: #6c757d;
-            --highlight-color: #e67e22; /* 橘色主題色 */
-            --border-color: #dee2e6;
-            --shadow-color: rgba(0, 0, 0, 0.1);
+            --primary-bg: #121212;      /* 主背景色 (近黑) */
+            --panel-bg: #1E1E1E;       /* 面板/容器背景色 (深灰) */
+            --hover-bg: #2a2a2a;       /* 懸停時的背景色 */
+            --font-color: #E0E0E0;      /* 主要文字顏色 (柔和白) */
+            --font-color-muted: #888888;/* 次要/提示文字顏色 */
+            --highlight-color: #f67f22;  /* 品牌橘色，作為視覺焦點 */
+            --border-color: #383838;     /* 細膩的邊框/分隔線顏色 */
+            --shadow-color: rgba(0, 0, 0, 0.4); /* 更深的陰影以在暗色背景上可見 */
         }
 
         html, body {
@@ -39,12 +40,19 @@
             overflow: hidden;
         }
 
+        /* 【新增】自訂滾動條樣式，使其與深色主題匹配 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--panel-bg); }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #666; }
+
+
         /* --- 主佈局 --- */
         .header {
-            background-color: var(--secondary-bg); padding: 15px 30px;
+            background-color: var(--panel-bg); padding: 15px 30px;
             height: 70px; box-sizing: border-box; display: flex;
             align-items: center; border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px var(--shadow-color);
+            box-shadow: 0 2px 8px var(--shadow-color);
             position: relative; z-index: 1001;
             animation: fadeInDown 0.6s ease-out;
         }
@@ -52,7 +60,12 @@
         .header p { margin: 4px 0 0 20px; font-weight: 400; font-size: 0.9em; color: var(--font-color-muted); }
 
         .main-container { display: flex; height: calc(100vh - 70px); }
-        #map-container { flex-grow: 1; height: 100%; background-color: #eaf0f5; }
+        
+        /* 【修改】地圖容器背景設為深色，避免圖磚載入前出現白色閃爍 */
+        #map-container { 
+            flex-grow: 1; height: 100%; 
+            background-color: #1c1c1c; 
+        }
         
         /* --- 左側地點列表 --- */
         #location-sidebar {
@@ -63,19 +76,21 @@
             animation: fadeInLeft 0.6s ease-out;
         }
 
-        /* 【新增】第一層：縣市樣式 */
+        /* 【修改】第一層：縣市樣式 */
         .county-group-header {
-            padding: 16px 20px;
+            padding: 18px 25px;
             cursor: pointer;
             border-bottom: 1px solid var(--border-color);
-            background-color: #f8f9fa;
-            font-size: 1.2em;
-            font-weight: 700;
+            background-color: transparent; /* 背景透明，融入面板 */
+            font-size: 1.1em;
+            font-weight: 500; /* 降低字重，更顯優雅 */
             color: var(--font-color);
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, color 0.3s;
+            letter-spacing: 1px; /* 增加字距 */
         }
         .county-group-header:hover {
-             background-color: #e9ecef;
+             background-color: var(--hover-bg);
+             color: #fff;
         }
         .locations-wrapper {
             max-height: 0;
@@ -85,70 +100,91 @@
 
         /* 【修改】第二層：景點樣式 */
         .location-group {
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
         }
         .location-group-header {
-            padding: 12px 20px 12px 35px; /* 增加左邊距以示層級 */
+            padding: 15px 25px 15px 40px; /* 增加左邊距以示層級 */
             cursor: pointer; display: flex;
             justify-content: space-between; align-items: center;
             transition: background-color 0.3s;
+            background-color: #222222; /* 比縣市層級稍深的背景 */
         }
-        .location-group-header:hover { background-color: #f8f9fa; }
-        .location-group-header h3 { margin: 0; font-size: 1.05em; font-weight: 500; }
+        .location-group-header:hover { background-color: var(--hover-bg); }
+        .location-group-header h3 { margin: 0; font-size: 1.0em; font-weight: 400; }
         .location-group-header .photo-count {
             font-size: 0.8em; background-color: var(--highlight-color);
-            color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: 700;
+            color: #fff; padding: 3px 10px; border-radius: 12px; font-weight: 700;
         }
         .photo-list {
             max-height: 0; overflow: hidden;
             transition: max-height 0.4s ease-in-out;
-            background-color: #fafafa;
-            padding-left: 15px; /* 縮排照片列表 */
+            background-color: #1A1A1A; /* 再次加深背景，創造層次感 */
+            padding-left: 0; /* 照片項目自行處理縮排 */
         }
         
-        /* 第三層：照片項目樣式 */
+        /* 【修改】第三層：照片項目樣式 */
         .photo-item {
-            padding: 10px 20px; cursor: pointer;
+            padding: 12px 25px 12px 40px; /* 與景點標題對齊 */
+            cursor: pointer;
             transition: background-color 0.3s ease;
             border-bottom: 1px solid var(--border-color);
+            position: relative; /* 為了高亮邊框定位 */
+            border-left: 3px solid transparent; /* 預留高亮邊框位置 */
         }
-        .photo-item.active, .photo-item:hover { background-color: #e9ecef; }
+        .photo-item.active, .photo-item:hover { 
+            background-color: var(--hover-bg);
+            border-left: 3px solid var(--highlight-color); /* 新增：高亮狀態的視覺反饋 */
+        }
         .photo-item .thumbnail {
             width: 100%; height: auto; object-fit: cover;
             border-radius: 4px; display: block;
-            box-shadow: 0 1px 3px var(--shadow-color);
+            box-shadow: 0 2px 6px var(--shadow-color);
+            transition: transform 0.3s ease;
         }
+        .photo-item:hover .thumbnail {
+            transform: scale(1.02); /* 新增：圖片懸停放大效果 */
+        }
+
 
         /* --- 地圖 Popup 樣式 --- */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-            background: var(--secondary-bg); color: var(--font-color);
-            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            background: var(--panel-bg); color: var(--font-color);
+            border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            border: 1px solid var(--border-color); /* 新增邊框增加質感 */
         }
-        .leaflet-popup-content { margin: 15px !important; text-align: center; }
-        .leaflet-popup-content b { font-size: 1.2em; color: var(--highlight-color); display: block; margin-bottom: 10px; }
+        .leaflet-popup-content { margin: 18px !important; text-align: center; }
+        .leaflet-popup-content b { font-size: 1.2em; color: var(--highlight-color); display: block; margin-bottom: 12px; }
         .leaflet-popup-content img {
             max-width: 280px; height: auto; border-radius: 5px; cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .leaflet-popup-content img:hover { transform: scale(1.03); }
+        .leaflet-popup-content img:hover { 
+            transform: scale(1.03); 
+            box-shadow: 0 0 15px var(--highlight-color);
+        }
 
-        /* 覆寫 Marker Cluster 的顏色為橘色 */
+        /* 覆寫 Marker Cluster 的顏色為橘色 (這部分原本就做得很好) */
         .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background-color: rgba(241, 128, 23, 0.6); }
         .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background-color: rgba(230, 126, 34, 0.9); color: #fff; }
 
         /* --- Lightbox & 其他 --- */
         .lightbox {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); /* 加深背景 */
             display: flex; justify-content: center; align-items: center; z-index: 2000;
             opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s;
         }
         .lightbox.show { opacity: 1; visibility: visible; }
-        .lightbox img { max-width: 90vw; max-height: 85vh; box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 5px; }
-        .lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5em; color: #fff; cursor: pointer; font-weight: 300; }
-        .lightbox .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); font-size: 3em; color: rgba(255, 255, 255, 0.7); cursor: pointer; user-select: none; padding: 10px; }
+        .lightbox img { 
+            max-width: 90vw; max-height: 85vh; 
+            box-shadow: 0 0 60px rgba(246, 127, 34, 0.3); /* 新增：使用高亮色作為光暈效果 */
+            border-radius: 5px; 
+        }
+        .lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5em; color: rgba(255,255,255,0.7); cursor: pointer; font-weight: 300; transition: color 0.3s; }
+        .lightbox .close-btn:hover { color: #fff; }
+        .lightbox .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); font-size: 3em; color: rgba(255, 255, 255, 0.6); cursor: pointer; user-select: none; padding: 10px; transition: color 0.3s, background-color 0.3s; }
         .lightbox .prev-btn { left: 20px; }
         .lightbox .next-btn { right: 20px; }
-        .lightbox .nav-btn:hover { color: #fff; }
+        .lightbox .nav-btn:hover { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 50%;}
 
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
@@ -188,104 +224,84 @@ document.addEventListener('DOMContentLoaded', function () {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+    // 【修改】使用橘色的 marker icon
     const orangeIcon = new L.Icon({
-        iconUrl: 'img/marker-icon-2x-blue.png',
-        shadowUrl: 'img/marker-shadow.png',
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
         iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
-   // 【修改】輔助函式：根據經緯度判斷台灣所有縣市
-    // 注意：此版本基於經緯度的大致範圍，對於邊界地帶可能會有微小誤差，但對絕大多數情況足夠準確。
+   // 【輔助函式：根據經緯度判斷縣市 (無變更)】
     function getCountyByLatLng(lat, lng) {
-        // 離島優先判斷
-        if (lat < 22.1 && lat > 21.8 && lng > 121.4 && lng < 121.6) return "臺東縣"; // 蘭嶼、綠島算台東
+        if (lat < 22.1 && lat > 21.8 && lng > 121.4 && lng < 121.6) return "臺東縣";
         if (lat < 23.9 && lat > 23.1 && lng < 119.8) return "澎湖縣";
         if (lat < 24.6 && lat > 24.2 && lng < 118.5) return "金門縣";
         if (lat < 26.3 && lat > 25.9 && lng < 120.1) return "連江縣";
-
-        // 台灣本島 (由北至南)
         if (lat > 25.1 && lng > 121.7) return "基隆市";
-        if (lat > 24.96 && lat < 25.2 && lng > 121.45 && lng < 121.65) return "臺北市"; // 臺北市被新北包圍，優先檢查
+        if (lat > 24.96 && lat < 25.2 && lng > 121.45 && lng < 121.65) return "臺北市";
         if (lat > 24.8 && lng > 121.0 && lng < 122.05) return "新北市";
         if (lat > 24.7 && lat < 25.15 && lng > 120.95 && lng < 121.45) return "桃園市";
         if (lat > 24.5 && lat < 24.95 && lng > 120.8 && lng < 121.3) return "新竹縣";
         if (lat > 24.75 && lat < 24.85 && lng > 120.9 && lng < 121.0) return "新竹市";
         if (lat > 24.4 && lat < 24.75 && lng > 120.5 && lng < 121.1) return "苗栗縣";
-
         if (lat > 24.0 && lat < 24.4 && lng < 120.8) return "臺中市";
         if (lat > 23.8 && lat < 24.15 && lng < 120.7) return "彰化縣";
         if (lat > 23.45 && lat < 24.2 && lng > 120.65 && lng < 121.4) return "南投縣";
         if (lat > 23.5 && lat < 23.9 && lng < 120.6) return "雲林縣";
-
         if (lat > 23.3 && lat < 23.65 && lng > 120.1 && lng < 120.8) return "嘉義縣";
         if (lat > 23.44 && lat < 23.5 && lng > 120.4 && lng < 120.5) return "嘉義市";
         if (lat > 22.9 && lat < 23.4 && lng < 120.6) return "臺南市";
         if (lat > 22.45 && lat < 23.3 && lng < 121.0) return "高雄市";
         if (lat < 22.8 && lng < 120.9) return "屏東縣";
-
-        // 東部
         if (lat > 24.5 && lng > 121.5) return "宜蘭縣";
         if (lat > 23.0 && lat < 24.4 && lng > 121.1) return "花蓮縣";
         if (lat > 22.0 && lat < 23.3 && lng > 120.8) return "臺東縣";
-
-        return "其他地區"; // 作為備用
+        return "其他地區";
     }
     
-    // 【修改】使用巢狀結構分組
+    // 【資料分組 (無變更)】
     const groupedData = photoData.reduce((acc, photo, index) => {
         const county = getCountyByLatLng(photo.lat, photo.lng);
         const location = photo.title;
         photo.id = index;
-        
         if (!acc[county]) acc[county] = {};
         if (!acc[county][location]) acc[county][location] = [];
-        
         acc[county][location].push(photo);
         return acc;
     }, {});
 
-
-    // --- 3. 動態生成 UI ---
+    // --- 3. 動態生成 UI (無變更) ---
     const sidebar = document.getElementById('location-sidebar');
     const markers = L.markerClusterGroup();
     const allMarkers = [];
-
-    // 【修改】使用巢狀迴圈生成 UI
     for (const county in groupedData) {
         const countyContainer = document.createElement('div');
         countyContainer.className = 'county-group';
-        
         const countyHeader = document.createElement('div');
         countyHeader.className = 'county-group-header';
         countyHeader.textContent = county;
         countyContainer.appendChild(countyHeader);
-
         const locationsWrapper = document.createElement('div');
         locationsWrapper.className = 'locations-wrapper';
         countyContainer.appendChild(locationsWrapper);
-
         for (const location in groupedData[county]) {
             const photos = groupedData[county][location];
             const groupDiv = document.createElement('div');
             groupDiv.className = 'location-group';
-            
             const headerDiv = document.createElement('div');
             headerDiv.className = 'location-group-header';
             headerDiv.innerHTML = `<h3>${location}</h3><span class="photo-count">${photos.length}</span>`;
             groupDiv.appendChild(headerDiv);
-
             const photoListDiv = document.createElement('div');
             photoListDiv.className = 'photo-list';
-            locationsWrapper.appendChild(groupDiv); // 將景點組放入縣市的 wrapper
+            locationsWrapper.appendChild(groupDiv);
             groupDiv.appendChild(photoListDiv);
-
             photos.forEach(photo => {
                 const item = document.createElement('div');
                 item.className = 'photo-item';
                 item.dataset.photoId = photo.id;
                 item.innerHTML = `<img src="${photo.image}" class="thumbnail" alt="${photo.title}" loading="lazy">`;
                 photoListDiv.appendChild(item);
-
                 const marker = L.marker([photo.lat, photo.lng], { icon: orangeIcon });
                 marker.bindPopup(`<b>${photo.title}</b><img src="${photo.image}" alt="${photo.title}" data-photo-id="${photo.id}">`);
                 marker.photoId = photo.id;
@@ -298,10 +314,8 @@ document.addEventListener('DOMContentLoaded', function () {
     map.addLayer(markers);
     if (photoData.length > 0) { map.fitBounds(markers.getBounds().pad(0.1)); }
 
-    // --- 4. 互動事件綁定 ---
-    // 【修改】事件監聽以處理兩層結構
+    // --- 4. 互動事件綁定 (無變更) ---
     sidebar.addEventListener('click', e => {
-        // 點擊縣市標題
         const countyHeader = e.target.closest('.county-group-header');
         if (countyHeader) {
             const wrapper = countyHeader.nextElementSibling;
@@ -309,25 +323,19 @@ document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.locations-wrapper').forEach(w => { if(w !== wrapper) w.style.maxHeight = null; });
             wrapper.style.maxHeight = isExpanded ? null : wrapper.scrollHeight + "px";
         }
-
-        // 點擊景點標題
         const locationHeader = e.target.closest('.location-group-header');
         if (locationHeader) {
             const photoList = locationHeader.nextElementSibling;
             const isExpanded = photoList.style.maxHeight && photoList.style.maxHeight !== '0px';
-            // 僅關閉同一個縣市下的其他景點列表
             locationHeader.closest('.locations-wrapper').querySelectorAll('.photo-list').forEach(list => { 
                 if(list !== photoList) list.style.maxHeight = null; 
             });
             photoList.style.maxHeight = isExpanded ? null : photoList.scrollHeight + "px";
-            // 重新計算外層 wrapper 的高度
             if (!isExpanded) {
                 const parentWrapper = locationHeader.closest('.locations-wrapper');
                 parentWrapper.style.maxHeight = parentWrapper.scrollHeight + photoList.scrollHeight + "px";
             }
         }
-
-        // 點擊照片項目
         const item = e.target.closest('.photo-item');
         if (item) {
             const photoId = parseInt(item.dataset.photoId);
@@ -339,30 +347,24 @@ document.addEventListener('DOMContentLoaded', function () {
             markers.zoomToShowLayer(marker, () => marker.openPopup());
         }
     });
-
     markers.on('click', (e) => {
         const photoId = e.layer.photoId;
         const targetItem = document.querySelector(`.photo-item[data-photo-id='${photoId}']`);
         if (targetItem) {
             const photoList = targetItem.closest('.photo-list');
-            const locationGroup = targetItem.closest('.location-group');
             const locationsWrapper = targetItem.closest('.locations-wrapper');
-
-            // 確保父層都已展開
             if (locationsWrapper && (!locationsWrapper.style.maxHeight || locationsWrapper.style.maxHeight === '0px')) {
                 locationsWrapper.style.maxHeight = locationsWrapper.scrollHeight + "px";
             }
             if (photoList && (!photoList.style.maxHeight || photoList.style.maxHeight === '0px')) {
                 photoList.style.maxHeight = photoList.scrollHeight + "px";
-                // 更新父層 wrapper 高度
                  locationsWrapper.style.maxHeight = locationsWrapper.scrollHeight + photoList.scrollHeight + "px";
             }
-            
             setTimeout(() => {
                 targetItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 document.querySelectorAll('.photo-item').forEach(el => el.classList.remove('active'));
                 targetItem.classList.add('active');
-            }, 400); // 增加延遲以等待展開動畫
+            }, 400);
         }
     });
 
