@@ -30,6 +30,7 @@
             --highlight-color: #f67f22;  /* 品牌橘色，作為視覺焦點 */
             --border-color: #383838;     /* 細膩的邊框/分隔線顏色 */
             --shadow-color: rgba(0, 0, 0, 0.4); /* 更深的陰影以在暗色背景上可見 */
+            --danger-color: #c0392b;     /* 用於停止按鈕的紅色 */
         }
 
         html, body {
@@ -51,17 +52,53 @@
         .header {
             background-color: var(--panel-bg); padding: 15px 30px;
             height: 70px; box-sizing: border-box; display: flex;
-            align-items: center; border-bottom: 1px solid var(--border-color);
+            align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 8px var(--shadow-color);
             position: relative; z-index: 1001;
             animation: fadeInDown 0.6s ease-out;
         }
+        .header-title-group {
+            display: flex;
+            align-items: center;
+        }
         .header h1 { margin: 0; font-size: 1.6em; font-weight: 700; color: var(--highlight-color); }
         .header p { margin: 4px 0 0 20px; font-weight: 400; font-size: 0.9em; color: var(--font-color-muted); }
 
-        .main-container { display: flex; height: calc(100vh - 70px); }
+        /* 隨機導覽按鈕樣式 */
+        .tour-button {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--highlight-color);
+            color: #fff;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            letter-spacing: 1px;
+        }
+        .tour-button:hover {
+            background-color: #ff983e;
+            transform: translateY(-1px);
+        }
+        .tour-button.active {
+            background-color: var(--danger-color);
+        }
+        .tour-button.active:hover {
+            background-color: #e74c3c;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+            transition: filter 0.5s ease-in-out; /* 【新增】為了沉浸式背景的平滑過渡 */
+        }
+        /* 【新增】沉浸式背景樣式 */
+        .main-container.tour-dim-background {
+            filter: brightness(0.4) blur(4px);
+        }
         
-        /* 【修改】地圖容器背景設為深色，避免圖磚載入前出現白色閃爍 */
         #map-container { 
             flex-grow: 1; height: 100%; 
             background-color: #1c1c1c; 
@@ -75,18 +112,16 @@
             padding: 0; box-sizing: border-box;
             animation: fadeInLeft 0.6s ease-out;
         }
-
-        /* 【修改】第一層：縣市樣式 */
         .county-group-header {
             padding: 18px 25px;
             cursor: pointer;
             border-bottom: 1px solid var(--border-color);
-            background-color: transparent; /* 背景透明，融入面板 */
+            background-color: transparent;
             font-size: 1.1em;
-            font-weight: 500; /* 降低字重，更顯優雅 */
+            font-weight: 500;
             color: var(--font-color);
             transition: background-color 0.3s, color 0.3s;
-            letter-spacing: 1px; /* 增加字距 */
+            letter-spacing: 1px;
         }
         .county-group-header:hover {
              background-color: var(--hover-bg);
@@ -97,17 +132,15 @@
             overflow: hidden;
             transition: max-height 0.5s ease-in-out;
         }
-
-        /* 【修改】第二層：景點樣式 */
         .location-group {
             border-bottom: 1px solid var(--border-color);
         }
         .location-group-header {
-            padding: 15px 25px 15px 40px; /* 增加左邊距以示層級 */
+            padding: 15px 25px 15px 40px;
             cursor: pointer; display: flex;
             justify-content: space-between; align-items: center;
             transition: background-color 0.3s;
-            background-color: #222222; /* 比縣市層級稍深的背景 */
+            background-color: #222222;
         }
         .location-group-header:hover { background-color: var(--hover-bg); }
         .location-group-header h3 { margin: 0; font-size: 1.0em; font-weight: 400; }
@@ -118,22 +151,20 @@
         .photo-list {
             max-height: 0; overflow: hidden;
             transition: max-height 0.4s ease-in-out;
-            background-color: #1A1A1A; /* 再次加深背景，創造層次感 */
-            padding-left: 0; /* 照片項目自行處理縮排 */
+            background-color: #1A1A1A;
+            padding-left: 0;
         }
-        
-        /* 【修改】第三層：照片項目樣式 */
         .photo-item {
-            padding: 12px 25px 12px 40px; /* 與景點標題對齊 */
+            padding: 12px 25px 12px 40px;
             cursor: pointer;
             transition: background-color 0.3s ease;
             border-bottom: 1px solid var(--border-color);
-            position: relative; /* 為了高亮邊框定位 */
-            border-left: 3px solid transparent; /* 預留高亮邊框位置 */
+            position: relative;
+            border-left: 3px solid transparent;
         }
         .photo-item.active, .photo-item:hover { 
             background-color: var(--hover-bg);
-            border-left: 3px solid var(--highlight-color); /* 新增：高亮狀態的視覺反饋 */
+            border-left: 3px solid var(--highlight-color);
         }
         .photo-item .thumbnail {
             width: 100%; height: auto; object-fit: cover;
@@ -142,7 +173,7 @@
             transition: transform 0.3s ease;
         }
         .photo-item:hover .thumbnail {
-            transform: scale(1.02); /* 新增：圖片懸停放大效果 */
+            transform: scale(1.02);
         }
 
 
@@ -150,7 +181,7 @@
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background: var(--panel-bg); color: var(--font-color);
             border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            border: 1px solid var(--border-color); /* 新增邊框增加質感 */
+            border: 1px solid var(--border-color);
         }
         .leaflet-popup-content { margin: 18px !important; text-align: center; }
         .leaflet-popup-content b { font-size: 1.2em; color: var(--highlight-color); display: block; margin-bottom: 12px; }
@@ -163,48 +194,127 @@
             box-shadow: 0 0 15px var(--highlight-color);
         }
 
-        /* 覆寫 Marker Cluster 的顏色為橘色 (這部分原本就做得很好) */
+        /* 覆寫 Marker Cluster 的顏色 */
         .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background-color: rgba(241, 128, 23, 0.6); }
         .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background-color: rgba(230, 126, 34, 0.9); color: #fff; }
 
         /* --- Lightbox & 其他 --- */
         .lightbox {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); /* 加深背景 */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9);
             display: flex; justify-content: center; align-items: center; z-index: 2000;
             opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0.4s;
         }
         .lightbox.show { opacity: 1; visibility: visible; }
-        .lightbox img { 
-            max-width: 90vw; max-height: 85vh; 
-            box-shadow: 0 0 60px rgba(246, 127, 34, 0.3); /* 新增：使用高亮色作為光暈效果 */
-            border-radius: 5px; 
+
+        /* Lightbox 內容容器，便於定位 */
+        .lightbox .lightbox-content {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 90vw;
+            max-height: 90vh;
         }
-        .lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5em; color: rgba(255,255,255,0.7); cursor: pointer; font-weight: 300; transition: color 0.3s; }
+
+        .lightbox img {
+            max-width: 100%; max-height: 100%;
+            width: auto; height: auto;
+            box-shadow: 0 0 60px rgba(246, 127, 34, 0.3);
+            border-radius: 5px;
+        }
+        .lightbox .close-btn { position: absolute; top: 20px; right: 30px; font-size: 2.5em; color: rgba(255,255,255,0.7); cursor: pointer; font-weight: 300; transition: color 0.3s; z-index: 2001; }
         .lightbox .close-btn:hover { color: #fff; }
         .lightbox .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); font-size: 3em; color: rgba(255, 255, 255, 0.6); cursor: pointer; user-select: none; padding: 10px; transition: color 0.3s, background-color 0.3s; }
         .lightbox .prev-btn { left: 20px; }
         .lightbox .next-btn { right: 20px; }
         .lightbox .nav-btn:hover { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 50%;}
 
+        /* 照片資訊欄樣式 */
+        .lightbox .lightbox-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: #fff;
+            padding: 40px 25px 20px;
+            box-sizing: border-box;
+            border-radius: 0 0 5px 5px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s 0.2s, transform 0.4s 0.2s;
+        }
+        .lightbox.show .lightbox-info {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .lightbox .lightbox-title {
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+            font-weight: 500;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+        
+        /* 進度條樣式 */
+        .lightbox .lightbox-progress {
+            width: 100%;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .lightbox .lightbox-progress-bar {
+            width: 100%;
+            height: 100%;
+            background-color: var(--highlight-color);
+            border-radius: 2px;
+            transform: translateX(-100%); /* 初始狀態在左邊外面 */
+        }
+        /* 當導覽運行時，為進度條加上動畫 */
+        .lightbox-progress-bar.running {
+            transform: translateX(0);
+            transition: transform 3s linear; /* 動畫時間為 3 秒 */
+        }
+
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         @media (max-width: 768px) {
             .main-container { flex-direction: column; height: calc(100vh - 60px); }
-            .header { height: 60px; padding: 10px 15px; } .header h1 { font-size: 1.4em; } .header p { display: none; }
+            .header { height: 60px; padding: 10px 15px; flex-wrap: wrap; } 
+            .header h1 { font-size: 1.4em; } .header p { display: none; }
+            .tour-button { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); }
             #location-sidebar { width: 100%; height: 45%; border-right: none; border-bottom: 2px solid var(--border-color); }
             #map-container { height: 55%; }
         }
     </style>
 </head>
 <body>
-    <header class="header"><h1>光影足跡</h1><p> Photographer / Cheng-nan Wu </p></header>
+    <header class="header">
+        <div class="header-title-group">
+            <h1>光影足跡</h1>
+            <p> Photographer / Cheng-nan Wu </p>
+        </div>
+        <button id="tour-button" class="tour-button">隨機導覽</button>
+    </header>
+
     <main class="main-container">
         <aside id="location-sidebar"></aside>
         <div id="map-container"></div>
     </main>
+
     <div id="lightbox" class="lightbox">
-        <span class="close-btn">×</span><span class="nav-btn prev-btn">‹</span>
-        <img src="" alt="Enlarged view"><span class="nav-btn next-btn">›</span>
+        <span class="close-btn">×</span>
+        <span class="nav-btn prev-btn">‹</span>
+        <div class="lightbox-content">
+            <img src="" alt="Enlarged view">
+            <div class="lightbox-info">
+                <h4 class="lightbox-title"></h4>
+                <div class="lightbox-progress">
+                    <div class="lightbox-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+        <span class="nav-btn next-btn">›</span>
     </div>
 
 <!-- ✨ 1. 載入獨立的地圖資料檔 -->
@@ -214,8 +324,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // --- photoData 陣列已移至 photo-data.js ---
-
     // --- 1. 地圖初始化 ---
     const map = L.map('map-container', { center: [23.9, 121.1], zoom: 8, zoomControl: false });
     L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
@@ -224,14 +332,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // 【修改】使用橘色的 marker icon
     const orangeIcon = new L.Icon({
         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
         iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
     });
 
-   // 【輔助函式：根據經緯度判斷縣市 (無變更)】
+   // --- 2. 輔助函式：根據經緯度判斷縣市 ---
     function getCountyByLatLng(lat, lng) {
         if (lat < 22.1 && lat > 21.8 && lng > 121.4 && lng < 121.6) return "臺東縣";
         if (lat < 23.9 && lat > 23.1 && lng < 119.8) return "澎湖縣";
@@ -259,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return "其他地區";
     }
     
-    // 【資料分組 (無變更)】
+    // --- 3. 資料處理與 UI 生成 ---
     const groupedData = photoData.reduce((acc, photo, index) => {
         const county = getCountyByLatLng(photo.lat, photo.lng);
         const location = photo.title;
@@ -270,7 +377,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return acc;
     }, {});
 
-    // --- 3. 動態生成 UI (無變更) ---
     const sidebar = document.getElementById('location-sidebar');
     const markers = L.markerClusterGroup();
     const allMarkers = [];
@@ -314,8 +420,9 @@ document.addEventListener('DOMContentLoaded', function () {
     map.addLayer(markers);
     if (photoData.length > 0) { map.fitBounds(markers.getBounds().pad(0.1)); }
 
-    // --- 4. 互動事件綁定 (無變更) ---
+    // --- 4. 互動事件綁定 ---
     sidebar.addEventListener('click', e => {
+        if (isTouring) stopTour(); // 手動操作側邊欄時停止導覽
         const countyHeader = e.target.closest('.county-group-header');
         if (countyHeader) {
             const wrapper = countyHeader.nextElementSibling;
@@ -368,20 +475,128 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- 5. Lightbox 燈箱功能 (無變更) ---
-    const lightbox = document.getElementById('lightbox'), lightboxImg = lightbox.querySelector('img'),
-          closeBtn = lightbox.querySelector('.close-btn'), prevBtn = lightbox.querySelector('.prev-btn'),
+    // --- 5. Lightbox 燈箱功能 ---
+    const mainContainer = document.querySelector('.main-container');
+    const lightbox = document.getElementById('lightbox'), 
+          lightboxImg = lightbox.querySelector('img'),
+          lightboxTitle = lightbox.querySelector('.lightbox-title'),
+          lightboxProgressBar = lightbox.querySelector('.lightbox-progress-bar'),
+          closeBtn = lightbox.querySelector('.close-btn'), 
+          prevBtn = lightbox.querySelector('.prev-btn'),
           nextBtn = lightbox.querySelector('.next-btn');
     let currentPhotoId;
-    function showLightbox(id) { currentPhotoId = id; lightboxImg.src = photoData[id].image; lightbox.classList.add('show'); }
-    function closeLightbox() { lightbox.classList.remove('show'); }
+
+    function showLightbox(id) {
+        currentPhotoId = id;
+        const photo = photoData[id];
+        lightboxImg.src = photo.image;
+        lightboxTitle.textContent = photo.title; // 更新標題
+        lightbox.classList.add('show');
+
+        if (isTouring) {
+            mainContainer.classList.add('tour-dim-background'); // 調暗背景
+            // 強制重繪以重置動畫
+            lightboxProgressBar.classList.remove('running');
+            void lightboxProgressBar.offsetWidth; // Trigger reflow
+            lightboxProgressBar.classList.add('running'); // 啟動進度條
+        }
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('show');
+        mainContainer.classList.remove('tour-dim-background'); // 恢復背景
+        lightboxProgressBar.classList.remove('running'); // 停止進度條
+    }
+
     function showAdjacent(dir) { let nextId = currentPhotoId + dir; if (nextId >= photoData.length) nextId = 0; if (nextId < 0) nextId = photoData.length - 1; showLightbox(nextId); }
     map.on('popupopen', e => { const img = e.popup._container.querySelector('img'); if (img) img.onclick = () => showLightbox(parseInt(img.dataset.photoId)); });
-    closeBtn.addEventListener('click', closeLightbox);
+    closeBtn.addEventListener('click', closeLightbox); // 點擊關閉按鈕，只關閉燈箱
     prevBtn.addEventListener('click', () => showAdjacent(-1));
     nextBtn.addEventListener('click', () => showAdjacent(1));
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-    document.addEventListener('keydown', e => { if (lightbox.classList.contains('show')) { if (e.key === 'Escape') closeLightbox(); if (e.key === 'ArrowLeft') showAdjacent(-1); if (e.key === 'ArrowRight') showAdjacent(1); } });
+    document.addEventListener('keydown', e => { if (lightbox.classList.contains('show') && e.key === 'Escape') closeLightbox(); });
+
+    // --- 6. 隨機導覽功能 ---
+    const tourButton = document.getElementById('tour-button');
+    let isTouring = false;
+    let tourTimeoutId = null;
+
+    function performTourStep() {
+        if (!isTouring) return;
+        const randomIndex = Math.floor(Math.random() * photoData.length);
+        const randomPhoto = photoData[randomIndex];
+        const marker = allMarkers[randomPhoto.id];
+        map.flyTo([randomPhoto.lat, randomPhoto.lng], 17, { duration: 10 });
+        map.once('moveend', () => {
+            if (!isTouring) return;
+            const targetItem = document.querySelector(`.photo-item[data-photo-id='${randomPhoto.id}']`);
+            if (targetItem) {
+                document.querySelectorAll('.photo-item').forEach(el => el.classList.remove('active'));
+                targetItem.classList.add('active');
+                targetItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            markers.zoomToShowLayer(marker, () => {
+                if (!isTouring) return;
+                marker.openPopup();
+                tourTimeoutId = setTimeout(() => {
+                    if (!isTouring) return;
+                    map.closePopup();
+                    showLightbox(randomPhoto.id);
+                    tourTimeoutId = setTimeout(() => {
+                        if (!isTouring) return;
+                        closeLightbox();
+                        tourTimeoutId = setTimeout(() => {
+                            if (!isTouring) return;
+                            performTourStep();
+                        }, 500);
+                    }, 5000);
+                }, 1500);
+            });
+        });
+    }
+
+    // 停止導覽函式，增加一個參數，決定是否要飛回地圖初始點
+    function stopTour(flyBackHome = false) {
+        if (!isTouring) return;
+        
+        clearTimeout(tourTimeoutId);
+        isTouring = false;
+        tourButton.classList.remove('active');
+        tourButton.textContent = '隨機導覽';
+        
+        map.closePopup();
+        closeLightbox(); 
+        
+        if (flyBackHome) {
+            map.flyTo([23.9, 121.1], 8, { duration: 3 });
+        }
+    }
+
+    tourButton.addEventListener('click', () => {
+        if (isTouring) {
+            stopTour(true); // 點擊主按鈕停止，飛回原點
+        } else {
+            isTouring = true;
+            tourButton.classList.add('active');
+            tourButton.textContent = '停止導覽';
+            map.closePopup();
+            performTourStep();
+        }
+    });
+
+    // 使用者手動中斷導覽的事件監聽
+    map.on('dragstart', () => stopTour()); 
+    closeBtn.addEventListener('click', () => stopTour());
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) stopTour(); });
+    document.addEventListener('keydown', e => {
+        if (isTouring && e.key === 'Escape') {
+            stopTour();
+        } else if (lightbox.classList.contains('show')) {
+            // 非導覽模式下的 lightbox 鍵盤控制
+            if (e.key === 'ArrowLeft') showAdjacent(-1);
+            if (e.key === 'ArrowRight') showAdjacent(1);
+        }
+    });
 });
 </script>
 </body>
