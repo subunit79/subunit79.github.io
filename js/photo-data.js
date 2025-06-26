@@ -68,9 +68,9 @@ const photoData = [
     //嘉義	
     { lat: 23.5183485, lng: 120.13644217999796, image: "MyTravelPhotos/日環食L.jpg", title: "天文" },
     { lat: 23.847524, lng: 120.916600, image: "MyTravelPhotos/竹崎頂石槕_2016-09-24-174117.jpg", title: "頂石棹" },
-    { lat: 23.479090, lng: 120.700113, image: "MyTravelPhotos/2K_DSC_5621.jpg", title: "隙頂" },
-    { lat: 23.479154, lng: 120.699995, image: "MyTravelPhotos/2K_DSC_5622.jpg", title: "隙頂" },
-    { lat: 23.478928, lng: 120.700317, image: "MyTravelPhotos/2K_DSC_5629.jpg", title: "隙頂" },
+    { lat: 23.479090, lng: 120.700113, image: "MyTravelPhotos/2K_DSC_5621.jpg", title: "頂石棹" },
+    { lat: 23.479154, lng: 120.699995, image: "MyTravelPhotos/2K_DSC_5622.jpg", title: "頂石棹" },
+    { lat: 23.478928, lng: 120.700317, image: "MyTravelPhotos/2K_DSC_5629.jpg", title: "頂石棹" },
     //台南		
     { lat: 23.259602, lng: 120.108118, image: "MyTravelPhotos/2K_DSC01164.jpg", title: "七股" },
     { lat: 23.259434, lng: 120.108075, image: "MyTravelPhotos/2K_DSC04085.jpg", title: "七股" },
