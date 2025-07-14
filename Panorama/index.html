@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣全景地圖導覽 (最終美化版)</title>
+
+    <!-- 引入所有需要的 CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* 確保沒有滾動條 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* 地圖在下層 */
+        }
+        
+        /* ★ --- 這是本次美化的核心 --- ★ */
+        #panorama-viewer {
+            position: fixed;
+            top: 0;
+            left: 0; /* 改為從左上角定位 */
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: #000;
+            
+            /* 預設隱藏在畫面「下方」 */
+            transform: translateY(100%); 
+            
+            /* 使用更流暢的動畫曲線 */
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #panorama-viewer.visible {
+            /* 滑入畫面 */
+            transform: translateY(0);
+        }
+        
+        /* ★ 我們不再需要針對桌機做特別的寬度設定，因為全螢幕是最好的體驗 */
+        /* @media (min-width: 768px) { ... } 這段已被移除 */
+        
+        #close-pano-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background-color: rgba(255, 255, 255, 0.2); /* 讓按鈕更通透、更現代 */
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 38px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        #close-pano-btn:hover {
+            transform: scale(1.1) rotate(90deg); /* 加入有趣的旋轉效果 */
+            background-color: rgba(255, 0, 0, 0.7); /* 滑鼠懸停時變為紅色 */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div id="panorama-viewer">
+        <div id="close-pano-btn">&times;</div>
+        <div id="panorama-container" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <!-- JavaScript 函式庫 (與之前完全相同) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <script src="photo_data.js"></script>
+
+    <script>
+        // ★ JavaScript 邏輯完全不需要修改，保持原樣即可 ★
+        let viewer = null;
+        const panoramaViewerUI = document.getElementById('panorama-viewer');
+        const closePanoBtn = document.getElementById('close-pano-btn');
+
+        const map = L.map('map').setView([23.973875, 120.982025], 7);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const markers = L.markerClusterGroup();
+
+        photoData.forEach(photo => {
+            const marker = L.marker([photo.lat, photo.lon]);
+            
+            marker.bindTooltip(photo.title);
+
+            marker.on('click', () => {
+                const photoPath = `pano_pic/${photo.id}`;
+                showPanorama(photoPath, photo.title);
+            });
+
+            markers.addLayer(marker);
+        });
+
+        map.addLayer(markers);
+
+        function showPanorama(path, title) {
+            if (viewer) {
+                viewer.destroy();
+                viewer = null;
+            }
+
+            viewer = pannellum.viewer('panorama-container', {
+                "type": "equirectangular",
+                "panorama": path,
+                "title": title,
+                "autoLoad": true,
+            });
+            
+            panoramaViewerUI.classList.add('visible');
+        }
+
+        function hidePanorama() {
+            panoramaViewerUI.classList.remove('visible');
+            if (viewer) {
+                viewer.destroy();
+                viewer = null;
+            }
+        }
+
+        closePanoBtn.addEventListener('click', hidePanorama);
+
+    </script>
+</body>
+</html>

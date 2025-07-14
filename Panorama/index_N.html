@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣全景地圖導覽 (最終穩定版)</title>
+
+    <!-- 引入所有需要的 CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+
+    <style>
+        html, body { margin: 0; padding: 0; height: 100vh; width: 100%; overflow: hidden; font-family: sans-serif; background-color: #f0f2f5; }
+        #main-container { display: flex; width: calc(100% - 40px); height: calc(100% - 40px); margin: 20px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); overflow: hidden; }
+        #map-container { flex: 1; }
+        #map { width: 100%; height: 100%; }
+        #panorama-container { flex: 2; background: #000; border-left: 1px solid #ddd; position: relative; }
+        .leaflet-marker-icon.active-marker { filter: hue-rotate(180deg) brightness(1.5) saturate(2); }
+        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: opacity 0.3s, visibility 0.3s; }
+        #loading-overlay.visible { visibility: visible; opacity: 1; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 767px) {
+            #main-container { flex-direction: column; width: 100%; height: 100%; margin: 0; border-radius: 0; box-shadow: none; }
+            #map-container { flex: 1; }
+            #panorama-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border-left: none; z-index: 1000; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+            #panorama-container.visible { transform: translateY(0); }
+            #close-pano-btn { display: block; }
+        }
+        #close-pano-btn { display: none; position: absolute; top: 15px; right: 15px; z-index: 2001; background-color: rgba(0, 0, 0, 0.5); color: white; font-size: 24px; font-weight: bold; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; text-align: center; line-height: 38px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+        <div id="panorama-container">
+            <div id="loading-overlay"><div class="loader"></div></div>
+            <div id="close-pano-btn">&times;</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <script src="photo_data.js"></script>
+
+    <script>
+        let viewer = null;
+        let activeMarker = null;
+        const panoramaContainer = document.getElementById('panorama-container');
+        const closePanoBtn = document.getElementById('close-pano-btn');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const ROTATION_SPEED = -2;
+
+        const map = L.map('map').setView([23.973875, 120.982025], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        const markers = L.markerClusterGroup({
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true
+        });
+
+        photoData.forEach(photo => {
+            const marker = L.marker([photo.lat, photo.lon]);
+            marker.bindTooltip(photo.title);
+            
+            // ★ 核心修正 1：將照片資料直接儲存在 marker 物件中，以便之後取用
+            marker.photoInfo = {
+                id: photo.id,
+                title: photo.title
+            };
+
+            // 我們不再對單個 marker 綁定 'click' 事件
+            // marker.on('click', ...); // <--- 這行已被移除
+
+            markers.addLayer(marker);
+        });
+
+        // ★ 核心修正 2：對 MarkerClusterGroup 本身，綁定官方推薦的 'childclick' 事件
+        markers.on('childclick', (e) => {
+            // e.layer 就是被點擊的那個子圖標
+            const clickedMarker = e.layer;
+            const photoInfo = clickedMarker.photoInfo;
+
+            // 執行高亮邏輯
+            if (activeMarker) { L.DomUtil.removeClass(activeMarker._icon, 'active-marker'); }
+            L.DomUtil.addClass(clickedMarker._icon, 'active-marker');
+            activeMarker = clickedMarker;
+
+            // 執行顯示全景的邏輯
+            const photoPath = `pano_pic/${photoInfo.id}`;
+            showPanorama(photoPath, photoInfo.title);
+        });
+
+        map.addLayer(markers);
+
+        function showPanorama(path, title) {
+            loadingOverlay.classList.add('visible');
+            if (window.innerWidth < 768) { panoramaContainer.classList.add('visible'); }
+            if (viewer) { viewer.destroy(); viewer = null; }
+            viewer = pannellum.viewer('panorama-container', {
+                "type": "equirectangular",
+                "panorama": path,
+                "title": title,
+                "autoLoad": true,
+                "autoRotate": ROTATION_SPEED,
+                "autoRotateInactivityDelay": 2000
+            });
+            viewer.on('load', () => {
+                loadingOverlay.classList.remove('visible');
+            });
+        }
+
+        function hidePanorama() {
+            panoramaContainer.classList.remove('visible');
+            if (viewer) { viewer.destroy(); viewer = null; }
+            if (activeMarker) { L.DomUtil.removeClass(activeMarker._icon, 'active-marker'); activeMarker = null; }
+        }
+        closePanoBtn.addEventListener('click', hidePanorama);
+
+        function loadInitialPanorama() {
+            if (photoData && photoData.length > 0) {
+                const randomIndex = Math.floor(Math.random() * photoData.length);
+                const randomPhoto = photoData[randomIndex];
+                const targetMarker = markers.getLayers().find(layer => 
+                    layer.getLatLng().lat === randomPhoto.lat && layer.getLatLng().lng === randomPhoto.lon
+                );
+                if(targetMarker){
+                    markers.zoomToShowLayer(targetMarker, () => {
+                        targetMarker.fire('click');
+                    });
+                }
+            }
+        }
+        
+        if (window.innerWidth >= 768) { loadInitialPanorama(); }
+        window.addEventListener('resize', () => { setTimeout(() => { map.invalidateSize(); }, 500); });
+    </script>
+</body>
+</html>
