@@ -16,9 +16,18 @@
         #map { width: 100%; height: 100%; z-index: 1; }
         #panorama-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background: #000; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #panorama-viewer.visible { transform: translateY(0); }
+        
+        /* 右上角關閉按鈕 */
         #close-pano-btn { position: absolute; top: 15px; right: 15px; z-index: 1002; background-color: rgba(255, 255, 255, 0.2); color: white; font-size: 24px; font-weight: bold; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 50%; width: 40px; height: 40px; text-align: center; line-height: 38px; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
         #close-pano-btn:hover { transform: scale(1.1) rotate(90deg); background-color: rgba(255, 0, 0, 0.7); }
+
+        /* --- 修改：移除舊的 #back-to-map-btn 樣式 --- */
+        /* 這裡原本獨立的 #back-to-map-btn 樣式已被刪除 */
+
+        /* 底部控制列容器 */
         #rotation-controls { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; background: rgba(0, 0, 0, 0.6); padding: 10px 15px; border-radius: 10px; display: flex; gap: 15px; }
+        
+        /* 控制列中的所有按鈕共用的樣式 */
         .control-button { background: none; border: 1px solid white; color: white; border-radius: 5px; padding: 8px 18px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; }
         .control-button:hover { background-color: rgba(255, 255, 255, 0.2); }
     </style>
@@ -26,12 +35,16 @@
 <body>
     <div id="map"></div>
     <div id="panorama-viewer">
-        <div id="close-pano-btn">&times;</div>
+        <div id="close-pano-btn">×</div>
+        
+        <!-- --- 修改：調整底部控制列的按鈕順序與內容 --- -->
         <div id="rotation-controls">
             <button id="rotate-cw-btn" class="control-button">順時針</button>
-            <button id="stop-btn" class="control-button">停止</button>
             <button id="rotate-ccw-btn" class="control-button">逆時針</button>
+            <button id="stop-btn" class="control-button">停止</button>
+            <button id="back-to-map-btn" class="control-button">返回地圖</button>
         </div>
+
         <div id="panorama-container" style="width: 100%; height: 100%;"></div>
     </div>
 
@@ -45,48 +58,46 @@
         let rotationIntervalId = null;
         const panoramaViewerUI = document.getElementById('panorama-viewer');
         const closePanoBtn = document.getElementById('close-pano-btn');
+        
+        // 取得控制列按鈕
         const rotateCwBtn = document.getElementById('rotate-cw-btn');
         const rotateCcwBtn = document.getElementById('rotate-ccw-btn');
         const stopBtn = document.getElementById('stop-btn');
-        
-        const FPS = 60;
-        const ROTATION_SPEED_PER_SECOND = 2; // 正數為順時針
+        const backToMapBtn = document.getElementById('back-to-map-btn'); // 依然可以正確找到按鈕
 
-        const map = L.map('map').setView([23.973875, 120.982025], 7);
+        const FPS = 60;
+        const ROTATION_SPEED_PER_SECOND = 2;
+
+        const map = L.map('map').setView([23.831422468134566, 120.85402106487277], 8);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         const markers = L.markerClusterGroup({ spiderfyOnMaxZoom: true });
         
-        // ★ --- 核心修改在此處：解析新的 GPS 字串格式 --- ★
         photoData.forEach(photo => {
-            // 1. 檢查 gps 欄位是否存在且不為空
             if (!photo.gps || photo.gps.trim() === '') {
-                console.error(`照片 "${photo.title}" 缺少或 'gps' 欄位為空，已跳過。`);
+                console.error(`照片 "${photo.id}" 缺少或 'gps' 欄位為空，已跳過。`);
                 return;
             }
-
-            // 2. 用逗號分割字串，並清理可能存在的空格，最後轉換為數字
+            
+            const title = photo.id.replace(/\.[^/.]+$/, "");
             const coords = photo.gps.split(',').map(coord => parseFloat(coord.trim()));
             
-            // 3. 驗證資料是否正確 (分割後必須是兩個有效的數字)
             if (coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) {
-                console.error(`照片 "${photo.title}" 的 'gps' 格式不正確 ("${photo.gps}")，已跳過。`);
+                console.error(`照片 "${title}" 的 'gps' 格式不正確 ("${photo.gps}")，已跳過。`);
                 return;
             }
 
-            // 4. 使用解析後的座標來建立圖標
-            const marker = L.marker(coords); // ★ 使用解析後的 coords，而不是舊的 photo.lat/lon
+            const marker = L.marker(coords);
             
-            marker.bindTooltip(photo.title);
+            marker.bindTooltip(title);
             marker.on('click', () => {
                 const photoPath = `pano_pic/${photo.id}`;
-                showPanorama(photoPath, photo.title);
+                showPanorama(photoPath, title);
             });
             markers.addLayer(marker);
         });
-        // ★ --- 修改結束 --- ★
 
         map.addLayer(markers);
 
@@ -116,10 +127,19 @@
         function hidePanorama() {
             panoramaViewerUI.classList.remove('visible');
             manualRotate(0); 
-            if (viewer) { viewer.destroy(); viewer = null; }
+            if (viewer) {
+                setTimeout(() => {
+                    if (viewer) { // 再次檢查，避免在等待期間使用者又觸發了其他動作
+                        viewer.destroy();
+                        viewer = null;
+                    }
+                }, 600);
+            }
         }
-        closePanoBtn.addEventListener('click', hidePanorama);
 
+        // 綁定所有按鈕的事件
+        closePanoBtn.addEventListener('click', hidePanorama);
+        backToMapBtn.addEventListener('click', hidePanorama); // 為"返回地圖"按鈕綁定相同的功能
         rotateCwBtn.addEventListener('click', () => manualRotate(ROTATION_SPEED_PER_SECOND));
         rotateCcwBtn.addEventListener('click', () => manualRotate(-ROTATION_SPEED_PER_SECOND));
         stopBtn.addEventListener('click', () => manualRotate(0));
