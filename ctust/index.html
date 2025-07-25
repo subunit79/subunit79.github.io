@@ -16,18 +16,9 @@
         #map { width: 100%; height: 100%; z-index: 1; }
         #panorama-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background: #000; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #panorama-viewer.visible { transform: translateY(0); }
-        
-        /* 右上角關閉按鈕 */
         #close-pano-btn { position: absolute; top: 15px; right: 15px; z-index: 1002; background-color: rgba(255, 255, 255, 0.2); color: white; font-size: 24px; font-weight: bold; border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 50%; width: 40px; height: 40px; text-align: center; line-height: 38px; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
         #close-pano-btn:hover { transform: scale(1.1) rotate(90deg); background-color: rgba(255, 0, 0, 0.7); }
-
-        /* --- 修改：移除舊的 #back-to-map-btn 樣式 --- */
-        /* 這裡原本獨立的 #back-to-map-btn 樣式已被刪除 */
-
-        /* 底部控制列容器 */
         #rotation-controls { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; background: rgba(0, 0, 0, 0.6); padding: 10px 15px; border-radius: 10px; display: flex; gap: 15px; }
-        
-        /* 控制列中的所有按鈕共用的樣式 */
         .control-button { background: none; border: 1px solid white; color: white; border-radius: 5px; padding: 8px 18px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; }
         .control-button:hover { background-color: rgba(255, 255, 255, 0.2); }
     </style>
@@ -37,11 +28,12 @@
     <div id="panorama-viewer">
         <div id="close-pano-btn">×</div>
         
-        <!-- --- 修改：調整底部控制列的按鈕順序與內容 --- -->
+        <!-- 新增 "隨機導覽" 按鈕 -->
         <div id="rotation-controls">
             <button id="rotate-cw-btn" class="control-button">順時針</button>
             <button id="rotate-ccw-btn" class="control-button">逆時針</button>
             <button id="stop-btn" class="control-button">停止</button>
+            <button id="random-tour-btn" class="control-button">隨機導覽</button>
             <button id="back-to-map-btn" class="control-button">返回地圖</button>
         </div>
 
@@ -56,17 +48,26 @@
     <script>
         let viewer = null;
         let rotationIntervalId = null;
+        
+        // --- 新增：隨機導覽相關的狀態變數 ---
+        let isRandomTourActive = false;
+        let randomTourTimeoutId = null;
+        
         const panoramaViewerUI = document.getElementById('panorama-viewer');
         const closePanoBtn = document.getElementById('close-pano-btn');
         
-        // 取得控制列按鈕
+        // 取得所有控制列按鈕
         const rotateCwBtn = document.getElementById('rotate-cw-btn');
         const rotateCcwBtn = document.getElementById('rotate-ccw-btn');
         const stopBtn = document.getElementById('stop-btn');
-        const backToMapBtn = document.getElementById('back-to-map-btn'); // 依然可以正確找到按鈕
+        const randomTourBtn = document.getElementById('random-tour-btn'); // 新增
+        const backToMapBtn = document.getElementById('back-to-map-btn');
 
         const FPS = 60;
-        const ROTATION_SPEED_PER_SECOND = 2;
+        const ROTATION_SPEED_PER_SECOND = 2; // 度/秒
+        
+        // --- 新增：計算旋轉一圈需要的毫秒數 ---
+        const FULL_ROTATION_DURATION_MS = (360 / ROTATION_SPEED_PER_SECOND) * 1000;
 
         const map = L.map('map').setView([24.172490, 120.736041], 20);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -93,6 +94,7 @@
             
             marker.bindTooltip(title);
             marker.on('click', () => {
+                stopRandomTour(); // 點擊地圖標記時，應停止隨機導覽
                 const photoPath = `pano_pic/${photo.id}`;
                 showPanorama(photoPath, title);
             });
@@ -100,6 +102,40 @@
         });
 
         map.addLayer(markers);
+
+        // --- 新增：停止隨機導覽模式的函式 ---
+        function stopRandomTour() {
+            isRandomTourActive = false;
+            if (randomTourTimeoutId) {
+                clearTimeout(randomTourTimeoutId);
+                randomTourTimeoutId = null;
+            }
+        }
+
+        // --- 新增：顯示下一張隨機照片的函式 ---
+        function showNextRandomPhoto() {
+            // 如果模式已停止或沒有照片資料，則直接返回
+            if (!isRandomTourActive || photoData.length === 0) {
+                stopRandomTour();
+                return;
+            }
+            // 隨機挑選一張照片
+            const randomIndex = Math.floor(Math.random() * photoData.length);
+            const photo = photoData[randomIndex];
+            const title = photo.id.replace(/\.[^/.]+$/, "");
+            const photoPath = `pano_pic/${photo.id}`;
+            
+            console.log(`隨機導覽下一站: ${title}`);
+            showPanorama(photoPath, title);
+        }
+        
+        // --- 新增：啟動隨機導覽的函式 ---
+        function startRandomTour() {
+            stopRandomTour();    // 清除任何可能存在的舊計時器
+            manualRotate(0);     // 停止當前的轉動
+            isRandomTourActive = true;
+            showNextRandomPhoto(); // 立刻顯示第一張
+        }
 
         function manualRotate(speed) {
             if (rotationIntervalId) { clearInterval(rotationIntervalId); rotationIntervalId = null; }
@@ -112,24 +148,37 @@
 
         function showPanorama(path, title) {
             if (viewer) { viewer.destroy(); viewer = null; }
+            
             viewer = pannellum.viewer('panorama-container', {
                 "type": "equirectangular",
                 "panorama": path,
                 "title": title,
                 "autoLoad": true,
             });
+            
+            // --- 修改：在全景圖載入後，根據模式決定行為 ---
             viewer.on('load', () => {
-                manualRotate(ROTATION_SPEED_PER_SECOND);
+                // 如果是隨機導覽模式，則開始旋轉並設定計時器
+                if (isRandomTourActive) {
+                    manualRotate(ROTATION_SPEED_PER_SECOND);
+                    // 設定計時器，在旋轉一圈後自動顯示下一張
+                    randomTourTimeoutId = setTimeout(showNextRandomPhoto, FULL_ROTATION_DURATION_MS);
+                } else {
+                    // 否則，維持原本的預設行為（載入後自動旋轉）
+                    manualRotate(ROTATION_SPEED_PER_SECOND);
+                }
             });
+            
             panoramaViewerUI.classList.add('visible');
         }
 
         function hidePanorama() {
+            stopRandomTour(); // 返回地圖時，停止隨機導覽
             panoramaViewerUI.classList.remove('visible');
             manualRotate(0); 
             if (viewer) {
                 setTimeout(() => {
-                    if (viewer) { // 再次檢查，避免在等待期間使用者又觸發了其他動作
+                    if (viewer) {
                         viewer.destroy();
                         viewer = null;
                     }
@@ -137,12 +186,28 @@
             }
         }
 
-        // 綁定所有按鈕的事件
+        // --- 修改：重新綁定所有按鈕的事件 ---
+        
+        // 關閉和返回按鈕都會停止導覽並隱藏畫面
         closePanoBtn.addEventListener('click', hidePanorama);
-        backToMapBtn.addEventListener('click', hidePanorama); // 為"返回地圖"按鈕綁定相同的功能
-        rotateCwBtn.addEventListener('click', () => manualRotate(ROTATION_SPEED_PER_SECOND));
-        rotateCcwBtn.addEventListener('click', () => manualRotate(-ROTATION_SPEED_PER_SECOND));
-        stopBtn.addEventListener('click', () => manualRotate(0));
+        backToMapBtn.addEventListener('click', hidePanorama);
+        
+        // 隨機導覽按鈕
+        randomTourBtn.addEventListener('click', startRandomTour);
+
+        // 手動控制會停止隨機導覽
+        rotateCwBtn.addEventListener('click', () => {
+            stopRandomTour();
+            manualRotate(ROTATION_SPEED_PER_SECOND);
+        });
+        rotateCcwBtn.addEventListener('click', () => {
+            stopRandomTour();
+            manualRotate(-ROTATION_SPEED_PER_SECOND);
+        });
+        stopBtn.addEventListener('click', () => {
+            stopRandomTour();
+            manualRotate(0);
+        });
 
     </script>
 </body>
